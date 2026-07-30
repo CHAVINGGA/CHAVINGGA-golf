@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A1A0D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Tomodachi Golf</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{
+  --bg:#0A1A0D; --hdr:#102918; --gold:#C9A84C; --gold-lt:#E8CE7E;
+  --thead:#1A3A20; --row-a:#0D1F10; --row-b:#132B17; --cream:#F0EAD8;
+  --muted:#8FA391; --red:#E05C4B; --amber:#E8A83C; --green-badge:#2E6B3A;
+  --silver:#8A8A8A; --bronze-bg:#7A4A1A; --bronze-tx:#FFD0A0;
+  --card:#0F2413; --line:#2A4A30;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{background:var(--bg);color:var(--cream);font-family:Georgia,'Times New Roman',serif;min-height:100vh;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.sans{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif}
+header.app{background:linear-gradient(180deg,#143220,#102918);border-bottom:2px solid var(--gold);padding:calc(10px + env(safe-area-inset-top)) 14px 10px;text-align:center;position:sticky;top:0;z-index:50}
+header.app h1{color:var(--gold);font-size:1.35rem;letter-spacing:2px;font-weight:700}
+header.app .sub{color:var(--cream);opacity:.75;font-size:.72rem;font-style:italic;margin-top:2px}
+main{max-width:760px;margin:0 auto;padding:12px}
+.view{display:none}.view.active{display:block}
+h2.sec{color:var(--gold);text-align:center;font-size:1.1rem;letter-spacing:1.5px;margin:16px 0 10px;text-transform:uppercase}
+h2.sec::before,h2.sec::after{content:"⛳";font-size:.8rem;margin:0 8px;opacity:.6}
+.statbar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+.stat{background:#F7F3E8;color:#12271A;border:2px solid var(--gold);border-radius:8px;padding:7px 4px;text-align:center}
+.stat .lbl{font-size:.56rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;opacity:.75}
+.stat .val{font-size:.95rem;font-weight:700;margin-top:2px}
+.stat .who{font-size:.6rem;opacity:.7}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+.tblwrap{overflow-x:auto;border:2px solid var(--gold);border-radius:10px;background:var(--card)}
+th{background:var(--thead);color:var(--gold);font-size:.68rem;letter-spacing:1px;text-transform:uppercase;padding:8px 6px;text-align:center;white-space:nowrap}
+td{padding:8px 6px;text-align:center;white-space:nowrap;border-top:1px solid #1C3823}
+tr:nth-child(odd) td{background:var(--row-a)}tr:nth-child(even) td{background:var(--row-b)}
+td.pl{text-align:left;font-weight:700}
+.rank{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--green-badge);color:#fff;font-size:.75rem;font-weight:700;font-family:Arial,sans-serif}
+.avg{color:var(--gold);font-weight:700}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.62rem;font-weight:700;letter-spacing:1px;font-family:Arial,sans-serif}
+.b-gold{background:linear-gradient(180deg,#E0BE62,#B08F35);color:#1A1503}
+.b-silver{background:linear-gradient(180deg,#A5A5A5,#777);color:#fff}
+.b-bronze{background:linear-gradient(180deg,#8F5A22,#6A3E12);color:var(--bronze-tx)}
+.chg-dn{color:var(--red);font-weight:700}.chg-up{color:var(--amber);font-weight:700}.chg-none{color:var(--muted)}
+.card-box{background:var(--card);border:2px solid var(--gold);border-radius:10px;padding:12px;margin:10px 0}
+.card-box h3{color:var(--gold);font-size:.85rem;letter-spacing:1.2px;text-transform:uppercase;text-align:center;margin-bottom:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(180deg,#E0BE62,#B08F35);color:#161203;border:none;border-radius:10px;padding:12px 18px;font-size:.95rem;font-weight:700;font-family:Arial,sans-serif;cursor:pointer;width:100%;letter-spacing:.5px}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:transparent;border:2px solid var(--gold);color:var(--gold)}
+.btn.danger{background:transparent;border:2px solid var(--red);color:var(--red)}
+.btn.sm{width:auto;padding:8px 14px;font-size:.8rem}
+.btnrow{display:flex;gap:8px;margin:10px 0}
+input[type=text],input[type=date],input[type=number],select{background:#0B1D0F;color:var(--cream);border:1.5px solid var(--line);border-radius:8px;padding:10px;font-size:1rem;width:100%;font-family:inherit}
+input:focus,select:focus{outline:none;border-color:var(--gold)}
+label.f{display:block;font-size:.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:10px 0 4px;font-family:Arial,sans-serif}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:8px 13px;border-radius:18px;border:1.5px solid var(--line);background:#0B1D0F;color:var(--cream);font-size:.82rem;cursor:pointer;font-family:Arial,sans-serif}
+.chip.on{background:var(--gold);color:#161203;border-color:var(--gold);font-weight:700}
+.chip .st{opacity:.65;font-size:.7rem}
+.score-grid{display:grid;grid-template-columns:1fr 74px 74px 60px;gap:6px;align-items:center;margin-top:8px}
+.score-grid .hd{font-size:.62rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:center;font-family:Arial,sans-serif}
+.score-grid .nm{font-weight:700;font-size:.88rem}
+.score-grid .nm .st{display:block;font-size:.66rem;color:var(--gold);font-weight:400;font-family:Arial,sans-serif}
+.score-grid input{text-align:center;padding:9px 4px;font-size:1.05rem}
+.score-grid .tot{text-align:center;color:var(--gold);font-weight:700;font-size:1rem}
+.pot{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.pot .cell{background:var(--thead);border:1px solid var(--gold);border-radius:8px;text-align:center;padding:7px 2px}
+.pot .cell .l{font-size:.56rem;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);font-family:Arial,sans-serif}
+.pot .cell .v{font-weight:700;font-size:.95rem;margin-top:2px}
+.money{color:#7FD98A;font-weight:700}
+.zero{color:var(--muted)}
+.funny{font-style:italic;line-height:1.55;font-size:.9rem;background:var(--row-b);border-left:3px solid var(--gold);padding:10px 12px;border-radius:6px}
+.tiemath{font-size:.75rem;color:var(--muted);font-family:Arial,sans-serif;margin-top:6px;line-height:1.5}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;background:#0C2010;border-top:2px solid var(--gold);display:flex;z-index:60;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;background:none;border:none;color:var(--muted);padding:9px 2px 7px;font-size:.62rem;letter-spacing:.5px;font-family:Arial,sans-serif;cursor:pointer;text-transform:uppercase}
+nav.tabs button .ic{display:block;font-size:1.25rem;margin-bottom:2px}
+nav.tabs button.on{color:var(--gold);font-weight:700}
+.hist-item{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:12px;margin:8px 0;cursor:pointer}
+.hist-item:active{border-color:var(--gold)}
+.hist-item .d{font-weight:700;color:var(--gold)}
+.hist-item .m{font-size:.75rem;color:var(--muted);font-family:Arial,sans-serif}
+.note{font-size:.74rem;color:var(--muted);font-family:Arial,sans-serif;line-height:1.5;margin:8px 2px}
+.gd-head{background:linear-gradient(180deg,#143220,#0F2A18);border:2px solid var(--gold);border-radius:12px;padding:14px;text-align:center;margin-bottom:10px;position:relative}
+.gd-head::before,.gd-head::after{content:"";position:absolute;width:18px;height:18px;border:2px solid var(--gold)}
+.gd-head::before{top:5px;left:5px;border-right:none;border-bottom:none}
+.gd-head::after{top:5px;right:5px;border-left:none;border-bottom:none}
+.gd-head .t1{color:var(--gold);font-size:1.6rem;font-weight:700;letter-spacing:3px}
+.gd-head .t2{color:var(--gold);font-size:.95rem;letter-spacing:4px;margin-top:2px}
+.gd-head .t3{color:var(--cream);opacity:.8;font-size:.7rem;font-style:italic;margin-top:6px}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--gold);color:#161203;font-weight:700;padding:10px 20px;border-radius:20px;font-family:Arial,sans-serif;font-size:.85rem;z-index:100;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+details{margin:10px 0}
+summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;padding:6px 0}
+.footer{color:var(--muted);text-align:center;font-size:.68rem;margin:18px 0;font-family:Arial,sans-serif}
+@media(max-width:420px){.statbar{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header class="app">
+  <h1>TOMODACHI</h1>
+  <div class="sub">Rolling 10 Avg &bull; Strokes vs PAR 72 &bull; Game-Day System</div>
+</header>
+<main>
+
+<!-- ============ GAME-DAY CARD ============ -->
+<section id="view-card" class="view active">
+  <div class="gd-head">
+    <div class="t1">TOMODACHI</div>
+    <div class="t2">GAME-DAY CARD</div>
+    <div class="t3">Rolling 10 Avg + Strokes vs PAR 72 (10+ rounds only)</div>
+    <div class="t3" id="gd-through"></div>
+  </div>
+  <div class="statbar" id="gd-stats"></div>
+  <div class="tblwrap"><table id="gd-table"></table></div>
+  <h2 class="sec">Stroke Allocation Changes</h2>
+  <div class="card-box" id="gd-changes"></div>
+  <details><summary>Players under 10 rounds (provisional)</summary>
+    <div class="tblwrap"><table id="gd-provisional"></table></div>
+  </details>
+  <div class="footer">Tomodachi Golf Group &middot; Strokes = 18h / 9h vs Par 72</div>
+</section>
+
+<!-- ============ NEW ROUND ============ -->
+<section id="view-round" class="view">
+  <h2 class="sec">New Round</h2>
+  <div class="card-box">
+    <label class="f">Date</label><input type="date" id="r-date">
+    <label class="f">Course</label><input type="text" id="r-course" placeholder="e.g. Country Club of the Pacific">
+    <label class="f">Bet per player ($)</label><input type="number" id="r-bet" value="20" min="1" step="1">
+    <label class="f">Which 9 is harder? (bigger stroke split applies there)</label>
+    <div class="chips" id="r-harder">
+      <button class="chip on" data-h="front">Front 9 harder</button>
+      <button class="chip" data-h="back">Back 9 harder</button>
+    </div>
+    <label class="f">Who played? <span id="r-count"></span></label>
+    <div class="chips" id="r-chips"></div>
+  </div>
+  <div class="card-box" id="r-scores-box" style="display:none">
+    <h3>Gross Scores</h3>
+    <div class="note">Strokes shown are <b>pre-round</b> (from current rolling averages) — these drive today's betting.</div>
+    <div class="score-grid" id="r-grid"></div>
+  </div>
+  <div class="btnrow"><button class="btn" id="r-calc">💰 Calculate Payouts</button></div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section id="view-results" class="view">
+  <h2 class="sec">Round Results</h2>
+  <div id="res-body"></div>
+  <div class="btnrow">
+    <button class="btn ghost" id="res-copy">📋 Copy WhatsApp Card</button>
+  </div>
+  <div class="btnrow" id="res-savebar">
+    <button class="btn" id="res-save">✅ Finalize &amp; Save Round</button>
+  </div>
+  <div class="btnrow" id="res-backbar" style="display:none">
+    <button class="btn ghost" id="res-back">← Back to History</button>
+  </div>
+</section>
+
+<!-- ============ HISTORY ============ -->
+<section id="view-history" class="view">
+  <h2 class="sec">Round History</h2>
+  <div id="hist-list"></div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="view-settings" class="view">
+  <h2 class="sec">Roster &amp; Data</h2>
+  <div class="card-box">
+    <h3>Add Player</h3>
+    <div style="display:flex;gap:8px"><input type="text" id="s-newname" placeholder="Player name"><button class="btn sm" id="s-add">Add</button></div>
+  </div>
+  <div class="card-box">
+    <h3>Data</h3>
+    <div class="btnrow"><button class="btn ghost" id="s-export">⬇ Export Backup (JSON)</button></div>
+    <div class="btnrow"><button class="btn ghost" id="s-import">⬆ Import Backup</button><input type="file" id="s-file" accept=".json" style="display:none"></div>
+    <div class="btnrow"><button class="btn danger" id="s-reset">Reset to Excel Seed (R5)</button></div>
+    <div class="note" id="s-info"></div>
+  </div>
+</section>
+</main>
+
+<nav class="tabs">
+  <button data-v="card" class="on"><span class="ic">🏆</span>Card</button>
+  <button data-v="round"><span class="ic">⛳</span>New Round</button>
+  <button data-v="history"><span class="ic">📅</span>History</button>
+  <button data-v="settings"><span class="ic">⚙️</span>Data</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ================= SEED (from Tomodachi Average Scores R5.xlsx) ================= */
+const SEED = {"players":["Chris","Keith","Herb","Ed","Dias","Ken R","TJ","Cam","Neil","Brandon","Derrick","Scott","Ron B","Kyu","Pete T","Matt Frazier","Ed H.","Peter H.","Harry","Efren","Sean Chu","Song","Bobby S","Uriah","Ken D","Charles","Will","Emming","Stan","Jess Lujan","Ron Choi","Frank Chen","Brian Moyland2","Rob Peredo"],"rounds":[{"date":"2025-01-01","scores":{"Herb":84,"Ed":87,"Dias":94,"Song":95}},{"date":"2025-01-03","scores":{"Chris":78,"Keith":93,"Herb":97,"Ed":90,"TJ":81,"Cam":83,"Derrick":99,"Kyu":95}},{"date":"2025-01-05","scores":{"Chris":75,"Keith":100,"Herb":86,"Ed":86,"Dias":93,"Ken R":101,"Cam":91,"Derrick":92}},{"date":"2025-01-10","scores":{"Chris":86,"Keith":97,"Derrick":83}},{"date":"2025-01-12","scores":{"Chris":79,"Keith":91,"Ed":89,"Dias":90,"Cam":98,"Derrick":93}},{"date":"2025-01-14","scores":{"Chris":90,"Ken R":78,"TJ":83,"Cam":88,"Ron B":98}},{"date":"2025-01-17","scores":{"Chris":89,"Keith":97,"TJ":77,"Derrick":95}},{"date":"2025-01-19","scores":{"Chris":85,"Keith":92,"Ed":84,"Dias":85,"Ken R":89,"Neil":83,"Derrick":81,"Kyu":99,"Harry":103,"Efren":98,"Sean Chu":90,"Uriah":89}},{"date":"2025-01-24","scores":{"Chris":86,"Keith":100,"Derrick":94}},{"date":"2025-01-26","scores":{"Chris":83,"Keith":98,"Herb":89,"Ed":90,"Dias":87,"Neil":106,"Derrick":84}},{"date":"2025-01-31","scores":{"Chris":81,"Keith":91,"Herb":83,"Ed":96,"Dias":90,"Ken R":88,"TJ":79,"Neil":83}},{"date":"1995-02-02","scores":{"Chris":83,"Keith":97,"Ed":82,"Dias":84,"Neil":93,"Derrick":84,"Kyu":113}},{"date":"2025-02-09","scores":{"Chris":89,"Keith":98,"Dias":95,"Derrick":93,"Efren":103}},{"date":"2025-02-14","scores":{"Chris":87,"Keith":100,"Herb":92,"Ken R":81,"Brandon":78,"Sean Chu":103}},{"date":"2025-02-16","scores":{"Chris":89,"Keith":94,"Ed":83,"Derrick":93}},{"date":"2025-02-17","scores":{"Derrick":77}},{"date":"2025-02-19","scores":{"Herb":88,"Ed":92,"Dias":92,"Ken R":96,"Derrick":87,"Peter H.":101,"Harry":116}},{"date":"2025-02-23","scores":{"Keith":94,"Derrick":83}},{"date":"2025-02-28","scores":{"Chris":88,"Keith":99,"Ed":92,"Neil":95}},{"date":"2025-03-02","scores":{"Chris":81,"Keith":97,"Ed":88,"Dias":94,"Cam":99}},{"date":"2025-03-06","scores":{"Derrick":79}},{"date":"2025-03-07","scores":{"Chris":82,"Keith":94,"Ed":87,"TJ":78,"Cam":90}},{"date":"2025-03-09","scores":{"Chris":82,"Keith":91,"Herb":85,"Ed":88,"Dias":93,"Derrick":79,"Kyu":106}},{"date":"2025-03-11","scores":{"Chris":83,"Keith":92,"Ed":97,"Brandon":72}},{"date":"2025-03-16","scores":{"Chris":93,"Herb":94,"Derrick":92,"Song":94}},{"date":"2025-03-17","scores":{"Chris":84,"Herb":94,"Ken R":94,"Song":93}},{"date":"2025-03-23","scores":{"Keith":94,"Ed":81,"Dias":86,"Brandon":78}},{"date":"2025-03-28","scores":{"Chris":79,"Keith":90,"Herb":83,"Ed":88}},{"date":"2025-03-30","scores":{"Chris":82,"Keith":90,"Ed":92,"Dias":91,"Brandon":77,"Derrick":93,"Scott":82}},{"date":"2025-04-04","scores":{"Chris":75,"Keith":91,"Herb":85,"Ed":82,"Dias":90,"Cam":86}},{"date":"2025-04-06","scores":{"Chris":83,"Keith":87,"Herb":89,"Ed":83,"Dias":95,"Ken R":87,"Derrick":93,"Scott":89,"Ron B":96}},{"date":"2025-04-07","scores":{"Derrick":78}},{"date":"2025-04-09","scores":{"Herb":89,"Ed":80,"Ken R":97}},{"date":"2025-04-10","scores":{"Derrick":92}},{"date":"2025-04-11","scores":{"Chris":84,"Keith":99,"Ed":86,"Dias":87,"Cam":83,"Brandon":81}},{"date":"2025-04-13","scores":{"Chris":78,"Keith":97,"Herb":83,"Ed":90,"Dias":96,"Ken R":86,"Cam":90,"Derrick":84,"Scott":83,"Ken D":83}},{"date":"2025-04-18","scores":{"Chris":81,"Keith":94,"Herb":93,"Ed":85,"Dias":95,"Ken R":92,"Derrick":85,"Scott":91}},{"date":"2025-04-20","scores":{"Chris":79,"Keith":95,"Herb":93,"Ed":82,"Dias":94,"Cam":91,"Derrick":84,"Scott":84,"Will":102}},{"date":"2025-04-24","scores":{"Chris":84,"Keith":95,"Ed":91}},{"date":"2025-04-25","scores":{"Chris":81,"Keith":97,"Ed":86}},{"date":"2025-04-26","scores":{"Herb":86,"TJ":77}},{"date":"2025-04-27","scores":{"Chris":89,"Keith":98,"Herb":91,"Ed":92,"Dias":94,"Cam":90,"Derrick":89,"Scott":82,"Kyu":101,"Will":110}},{"date":"2025-05-02","scores":{"Chris":90,"Keith":92,"Herb":93,"Ed":90,"Ken R":97,"Scott":89}},{"date":"2025-05-03","scores":{"Derrick":76}},{"date":"2025-05-04","scores":{"Chris":73,"Keith":96,"Herb":93,"Ed":83,"Dias":84,"Cam":90,"Derrick":96,"Scott":82,"Kyu":112,"Sean Chu":98,"Will":105}},{"date":"2025-05-09","scores":{"Chris":78,"Keith":91,"Herb":85,"Ed":82,"Ken R":90,"TJ":81,"Neil":88,"Brandon":77,"Derrick":95,"Scott":90,"Ron B":97}},{"date":"2025-05-11","scores":{"Chris":80,"Keith":92,"Herb":86,"Ed":95,"Dias":90,"Ken R":97,"Derrick":91,"Scott":87,"Kyu":103}},{"date":"2025-05-16","scores":{"Chris":87,"Keith":104,"Ed":85,"TJ":75,"Derrick":82,"Scott":83}},{"date":"2025-05-18","scores":{"Chris":80,"Keith":115,"Herb":94,"Ed":86,"Dias":95,"Cam":85,"Derrick":89,"Kyu":122,"Will":112}},{"date":"2025-05-22","scores":{"Chris":91,"Keith":97}},{"date":"2025-05-23","scores":{"Chris":78,"Keith":97,"Herb":91,"Ed":84,"Ken R":100,"TJ":74}},{"date":"2025-05-25","scores":{"Chris":75,"Keith":93,"Ed":80,"Dias":83,"Brandon":71,"Derrick":81,"Ron B":96}},{"date":"2025-05-31","scores":{"Ed":101,"Brandon":79,"Derrick":88,"Scott":82}},{"date":"2025-06-01","scores":{"Keith":104,"Herb":89,"Ed":82,"Dias":89,"Derrick":90,"Scott":90}},{"date":"2025-06-08","scores":{"Chris":85,"Ed":80,"Dias":89,"Cam":97,"Derrick":81,"Scott":83,"Kyu":106,"Efren":96,"Will":103}},{"date":"2025-06-11","scores":{"Herb":84}},{"date":"2025-06-13","scores":{"Chris":79,"Keith":91,"Ed":89,"Derrick":83,"Scott":93}},{"date":"2025-06-15","scores":{"Chris":86,"Keith":95,"Herb":86,"Ed":88,"Cam":90,"Brandon":80,"Derrick":93,"Scott":88}},{"date":"2025-06-20","scores":{"Chris":76,"Keith":93,"Herb":89,"Ed":94,"TJ":79,"Scott":87}},{"date":"2025-06-21","scores":{"Chris":83,"Derrick":81,"Efren":97}},{"date":"0825-06-22","scores":{"Chris":88,"Keith":87,"Herb":96,"Ed":84,"Dias":93,"Cam":94,"Brandon":80,"Derrick":83,"Scott":83}},{"date":"2025-06-27","scores":{"Chris":84,"Keith":96,"Herb":89,"Ed":85,"TJ":78,"Neil":91}},{"date":"2025-06-28","scores":{"Chris":81,"Derrick":88,"Scott":81}},{"date":"2025-06-29","scores":{"Chris":80,"Keith":98,"Herb":87,"Ed":87,"Dias":84,"Derrick":85,"Scott":82,"Efren":90,"Ron Choi":95}},{"date":"2025-07-01","scores":{"Chris":92,"Herb":90,"Ed":78,"Ken R":97}},{"date":"2025-07-02","scores":{"Herb":84,"Song":80}},{"date":"2025-07-03","scores":{"Chris":81,"Keith":100,"Ed":83,"TJ":72,"Neil":90,"Derrick":90}},{"date":"2025-07-04","scores":{"Chris":83,"Keith":92,"Ed":86,"Derrick":86,"Scott":86,"Efren":94}},{"date":"2025-07-05","scores":{"Ed":85,"Brandon":76,"Song":87,"Ken D":89}},{"date":"2025-07-06","scores":{"Chris":78,"Keith":91,"Ed":84,"Dias":85,"Neil":83,"Derrick":82,"Scott":75,"Kyu":103,"Efren":89,"Song":78}},{"date":"2025-07-08","scores":{"Neil":88,"Efren":91}},{"date":"2025-07-09","scores":{"Herb":83,"Neil":92,"Song":92}},{"date":"2025-07-10","scores":{"Ed":88,"Scott":87,"Efren":94}},{"date":"2025-07-11","scores":{"Chris":76,"Keith":103,"Herb":88,"Ed":84,"TJ":76,"Scott":96,"Song":89}},{"date":"2025-07-13","scores":{"Chris":76,"Keith":94,"Ed":88,"Derrick":80,"Scott":85,"Efren":90,"Ron Choi":104}},{"date":"2025-07-15","scores":{"Efren":94}},{"date":"2025-07-16","scores":{"Herb":91,"Ed":87,"Song":92}},{"date":"2025-07-17","scores":{"Ed":79,"Song":92}},{"date":"2025-07-18","scores":{"Chris":81,"Herb":96,"Ed":85,"TJ":76,"Derrick":83,"Scott":86,"Efren":100,"Song":87}},{"date":"2025-07-19","scores":{"Chris":83,"Ed":89,"Derrick":83,"Scott":92}},{"date":"2025-07-20","scores":{"Chris":81,"Herb":88,"Ed":83,"Dias":90,"Derrick":86,"Scott":83,"Efren":101,"Song":84}},{"date":"2025-07-23","scores":{"Chris":74,"Ed":88,"Ken R":91,"TJ":80,"Neil":87,"Scott":86,"Ron B":99,"Song":83}},{"date":"2025-07-26","scores":{"Herb":90,"Ken R":91,"Derrick":88,"Song":94}},{"date":"2025-07-27","scores":{"Chris":84,"Keith":93,"Herb":86,"Ed":85,"Dias":92,"Brandon":78,"Derrick":88,"Scott":85,"Efren":97,"Song":93}},{"date":"2025-08-01","scores":{"Chris":79,"Herb":90,"Ed":85,"Ken R":90,"TJ":76,"Derrick":90,"Scott":88,"Song":89}},{"date":"2025-08-03","scores":{"Derrick":82}},{"date":"2025-08-04","scores":{"Chris":79,"Herb":83,"Ed":87,"Dias":90,"Cam":86,"Derrick":90,"Scott":81,"Ron B":98,"Song":86,"Emming":99}},{"date":"2025-08-07","scores":{"Chris":81,"TJ":74}},{"date":"2025-08-09","scores":{"Chris":79,"Ed":82,"TJ":77,"Brandon":70}},{"date":"2025-08-10","scores":{"Chris":88,"Herb":89,"Ed":85,"Dias":92,"Scott":82,"Stan":87}},{"date":"2025-08-11","scores":{"Chris":88,"Herb":89,"Ed":85,"Dias":92,"Scott":82,"Stan":87}},{"date":"2025-08-13","scores":{"Chris":89,"Ken R":100}},{"date":"2025-08-14","scores":{"Chris":85,"Neil":85,"Scott":81,"Efren":97}},{"date":"2025-08-15","scores":{"Chris":84,"Herb":101,"Dias":94,"Ken R":97,"Song":85}},{"date":"2025-08-17","scores":{"Chris":90,"Keith":86,"Herb":89,"Dias":96,"Brandon":77,"Derrick":94,"Scott":78,"Kyu":119,"Song":87}},{"date":"2025-08-18","scores":{"Derrick":95}},{"date":"2025-08-23","scores":{"Herb":88,"Ed":86,"Cam":90,"Derrick":81,"Scott":78}},{"date":"2025-08-24","scores":{"Keith":99,"Herb":84,"Ed":89,"Dias":95,"Cam":85,"Brandon":73,"Derrick":83,"Scott":81,"Efren":95,"Ron Choi":95}},{"date":"2025-08-26","scores":{"Keith":94,"Ed":82,"Scott":76}},{"date":"2025-08-29","scores":{"Chris":79,"Keith":92,"Herb":87,"Ed":85,"Dias":91,"Ken R":94,"TJ":74,"Cam":80,"Brandon":73,"Derrick":93,"Jess Lujan":86}},{"date":"2025-08-30","scores":{"Scott":77}},{"date":"2025-08-31","scores":{"Chris":77,"Keith":95,"Herb":87,"Ed":81,"Dias":93,"Cam":93,"Derrick":85,"Scott":85,"Ron B":100,"Kyu":106,"Ken D":89,"Ron Choi":96}},{"date":"2025-09-01","scores":{"Scott":83}},{"date":"2025-09-02","scores":{"Scott":78}},{"date":"2025-09-03","scores":{"Scott":88}},{"date":"2025-09-05","scores":{"Chris":83,"TJ":80,"Brandon":76,"Derrick":91,"Scott":82}},{"date":"2025-09-07","scores":{"Chris":85,"Keith":94,"Herb":97,"Ed":87,"Dias":101,"Derrick":85,"Scott":86,"Ron B":96,"Sean Chu":100}},{"date":"2025-09-08","scores":{"Scott":91}},{"date":"2025-09-09","scores":{"Scott":92}},{"date":"2025-09-10","scores":{"Herb":78,"Ed":89,"Derrick":91}},{"date":"2025-09-12","scores":{"Chris":83,"Keith":97,"Herb":87,"Ed":83,"Ken R":91,"TJ":79,"Neil":90,"Ron B":95}},{"date":"2025-09-14","scores":{"Chris":85,"Keith":97,"Herb":90,"Ed":88,"Derrick":93,"Scott":82,"Emming":91}},{"date":"2025-09-19","scores":{"Chris":85,"Keith":97,"Herb":87,"Ed":97,"TJ":75,"Derrick":84,"Scott":92,"Ron B":96}},{"date":"2025-09-21","scores":{"Chris":82,"Keith":98,"Herb":92,"Ed":79,"Dias":93,"Derrick":85,"Scott":85}},{"date":"2025-09-24","scores":{"Herb":96,"Ed":83,"Neil":86}},{"date":"2025-09-26","scores":{"Chris":87,"Keith":94,"Ed":81,"TJ":76,"Scott":88}},{"date":"2025-09-28","scores":{"Chris":84,"Keith":94,"Ed":89,"Cam":97,"Derrick":87,"Scott":87}},{"date":"2025-10-01","scores":{"Chris":80,"Herb":87,"Ed":89,"Ken R":88,"Derrick":85,"Scott":85}},{"date":"2025-10-03","scores":{"Chris":84,"Keith":97,"TJ":82,"Ron B":97}},{"date":"2025-10-05","scores":{"Chris":82,"Keith":90,"Ed":87,"Derrick":87,"Scott":84}},{"date":"2025-10-08","scores":{"Chris":85,"Herb":85,"Ed":84,"Ron B":104}},{"date":"2025-10-10","scores":{"Chris":77,"Keith":92,"Herb":85,"Ed":85,"Derrick":79,"Scott":86}},{"date":"2025-10-12","scores":{"Chris":83,"Keith":100,"Ed":85,"Brandon":76,"Derrick":91,"Scott":78}},{"date":"2025-10-16","scores":{"Herb":85,"Ed":86,"Scott":81,"Ron B":103}},{"date":"2025-10-17","scores":{"Chris":78,"Herb":86,"Ed":82,"Ken R":94,"TJ":79,"Scott":83,"Peter H.":101}},{"date":"2025-10-19","scores":{"Chris":77,"Keith":95,"Herb":88,"Dias":87,"Cam":78,"Derrick":84,"Scott":87,"Peter H.":92}},{"date":"2025-10-22","scores":{"Herb":86,"Ed":93,"Ken R":96,"Peter H.":94}},{"date":"2025-10-24","scores":{"Chris":82,"Keith":95,"Herb":88,"Ed":86,"Cam":95,"Scott":86,"Peter H.":90}},{"date":"2025-10-26","scores":{"Chris":82,"Keith":96,"Herb":88,"Ed":85,"Dias":91,"Derrick":90,"Scott":87,"Peter H.":102,"Stan":93}},{"date":"2025-10-28","scores":{"Herb":91,"Ed":87,"Ken R":93,"Brandon":80,"Peter H.":100,"Stan":87}},{"date":"2025-10-31","scores":{"Chris":86,"Keith":100,"Herb":96,"Ed":97,"Ken R":103,"Derrick":82,"Scott":95,"Ron B":110,"Peter H.":103}},{"date":"2025-11-05","scores":{"Derrick":83,"Scott":86,"Peter H.":93}},{"date":"2025-11-08","scores":{"Chris":79,"Ed":91,"Brandon":77,"Derrick":84,"Scott":81,"Peter H.":94,"Stan":84}},{"date":"2025-11-09","scores":{"Chris":88,"Ed":89,"Brandon":75,"Derrick":85,"Scott":105,"Peter H.":93,"Stan":84}},{"date":"2025-11-14","scores":{"Chris":81,"Keith":95,"Ed":97,"Ken R":86,"TJ":82,"Scott":81,"Ken D":91,"Stan":98}},{"date":"2025-11-16","scores":{"Chris":86,"Keith":104,"Ed":94,"Dias":97,"Cam":93,"Derrick":96,"Scott":88,"Stan":85}},{"date":"2025-11-20","scores":{"Herb":94,"Ed":91,"Dias":94,"Ken R":89,"Cam":94,"Scott":87,"Ron B":94,"Sean Chu":92}},{"date":"2025-11-21","scores":{"Chris":88,"Keith":103,"Herb":89,"Ed":88,"TJ":81,"Brandon":82,"Derrick":93,"Scott":92}},{"date":"2025-11-23","scores":{"Chris":88,"Keith":94,"Herb":86,"Ed":88,"Dias":92,"Cam":94,"Derrick":92}},{"date":"2025-11-28","scores":{"Chris":81,"Herb":93,"Ed":89,"Cam":99,"Brandon":78,"Will":107}},{"date":"2025-11-30","scores":{"Chris":80,"Ed":83,"Efren":102}},{"date":"2025-12-03","scores":{"Herb":85,"Ed":90,"Cam":94,"Neil":95}},{"date":"2025-12-05","scores":{"Chris":87,"Keith":95,"Herb":91,"Ed":82,"Dias":98,"Ken R":92,"TJ":84,"Cam":90,"Brandon":76,"Scott":84}},{"date":"2025-12-07","scores":{"Chris":82,"Keith":88,"Herb":85,"Ed":88,"Dias":99,"Cam":91,"Scott":86}},{"date":"2025-12-12","scores":{"Keith":102,"Herb":85,"Ed":84,"Ken R":92,"Cam":93,"Brandon":74,"Scott":92,"Ron B":97}},{"date":"2025-12-14","scores":{"Keith":104,"Herb":95,"Dias":93,"Scott":90}},{"date":"2025-12-17","scores":{"Chris":83,"Herb":88,"Ed":84,"Brandon":74,"Scott":89}},{"date":"2025-12-19","scores":{"Chris":83,"Keith":95,"Herb":88,"Ed":78,"Dias":93,"Ron B":100,"Song":94}},{"date":"2025-12-21","scores":{"Chris":87,"Herb":88,"Ed":86,"Dias":88,"Ken R":102,"Cam":97,"Neil":92,"Derrick":85,"Peter H.":111,"Harry":115,"Efren":104,"Sean Chu":105,"Song":95,"Emming":102}},{"date":"2025-12-24","scores":{"Chris":78,"Ed":86,"Ken R":88,"Song":93}},{"date":"2025-12-26","scores":{"Chris":82,"Herb":95,"Ed":86,"Dias":93,"Song":91}},{"date":"2025-12-28","scores":{"Chris":84,"Herb":92,"Ed":79,"Dias":92,"Ken R":96,"Derrick":83,"Peter H.":98,"Song":92}},{"date":"2025-12-31","scores":{"Ed":85,"Neil":88,"Brandon":73,"Brian Moyland2":84}},{"date":"2026-01-02","scores":{"Chris":79,"Ed":88}},{"date":"2026-01-03","scores":{"Chris":82,"Ed":86,"Derrick":87}},{"date":"2026-01-04","scores":{"Chris":85,"Keith":98,"Ed":87,"Derrick":88}},{"date":"2026-01-07","scores":{"Chris":84,"Herb":86,"Ed":81}},{"date":"2026-01-09","scores":{"Chris":84,"Keith":98,"Herb":87,"Ed":80}},{"date":"2026-01-10","scores":{"Chris":81,"Ed":89,"Derrick":91}},{"date":"2026-01-11","scores":{"Chris":81,"Keith":110,"Dias":96,"Derrick":90,"Scott":87}},{"date":"2026-01-13","scores":{"Chris":81,"Herb":87,"Ed":93,"Brandon":75,"Ron B":90}},{"date":"2026-01-16","scores":{"Chris":80,"Keith":94,"Herb":90,"Ed":89,"Ron B":106,"Rob Peredo":101}},{"date":"2026-01-18","scores":{"Chris":76,"Keith":107,"Ed":81,"Dias":86,"Derrick":91,"Scott":84,"Kyu":109}},{"date":"2026-01-19","scores":{"Chris":78,"Keith":100,"Herb":89}},{"date":"2026-01-23","scores":{"Chris":77,"Keith":95,"Herb":91,"Ed":87,"Ken R":95,"Neil":80,"Brandon":78,"Derrick":90}},{"date":"2026-01-24","scores":{"Chris":81,"Ed":86,"Scott":79}},{"date":"2026-01-25","scores":{"Chris":83,"Keith":100,"Ed":78,"Dias":92,"Scott":80,"Ron B":101}},{"date":"2026-01-30","scores":{"Chris":87,"Keith":105}},{"date":"2026-01-31","scores":{"Ed":85,"Brandon":81,"Scott":83}},{"date":"2026-02-01","scores":{"Herb":89,"Ed":88,"Dias":90,"Derrick":86,"Scott":79,"Kyu":113}},{"date":"2026-02-05","scores":{"Chris":81,"Keith":102}},{"date":"2026-02-06","scores":{"Ed":85,"Brandon":76}},{"date":"2026-02-08","scores":{"Keith":105,"Ed":94,"Derrick":90}},{"date":"2026-02-11","scores":{"Herb":94,"Ed":87,"Ken R":90}},{"date":"2026-02-13","scores":{"Keith":102,"Herb":91,"Ed":84,"Ken R":87,"Neil":87,"Brandon":84,"Ron B":91}},{"date":"2026-02-15","scores":{"Chris":84,"Keith":93,"Herb":90,"Ed":85,"Dias":95,"Derrick":84,"Scott":90,"Stan":97}},{"date":"2026-02-18","scores":{"Chris":80,"Ed":82}},{"date":"2026-02-19","scores":{"Ed":80,"Stan":88}},{"date":"2026-02-20","scores":{"Chris":79,"Keith":95,"Ed":83,"Dias":93,"Ken R":91}},{"date":"2026-02-22","scores":{"Chris":80,"Keith":96,"Ed":81,"Dias":88,"Ken R":86,"Scott":84,"Kyu":109,"Ken D":92}},{"date":"2026-02-26","scores":{"Chris":81,"Herb":85,"Dias":95,"Ken R":100,"Ron B":99}},{"date":"2026-02-27","scores":{"Keith":99,"Brandon":72,"Ken D":89}},{"date":"2026-03-01","scores":{"Chris":84,"Keith":95,"Ed":88,"Dias":95,"Neil":97,"Derrick":90,"Scott":88}},{"date":"2026-03-03","scores":{"Ed":78}},{"date":"2026-03-06","scores":{"Chris":78,"Keith":94,"Neil":93,"Brandon":80}},{"date":"2026-03-08","scores":{"Chris":89,"Keith":96,"Ed":81,"Derrick":84,"Scott":83}},{"date":"2026-03-11","scores":{"Herb":83,"Ed":90}},{"date":"2026-03-15","scores":{"Chris":87,"Herb":88,"Ed":90,"Dias":100,"Scott":83,"Ron Choi":102}},{"date":"2026-03-22","scores":{"Chris":79,"Keith":96,"Herb":93,"Ed":85,"Dias":93,"Cam":93,"Scott":82}},{"date":"2026-03-27","scores":{"Chris":81,"Keith":99,"Ed":85,"Cam":92}},{"date":"2026-03-29","scores":{"Chris":87,"Keith":98,"Herb":89,"Ed":84,"Brandon":77,"Derrick":92,"Scott":80}},{"date":"2026-04-03","scores":{"Chris":90,"Keith":97,"Herb":86,"Ed":83,"Ken R":93,"Cam":89}},{"date":"2026-04-05","scores":{"Chris":82,"Keith":104,"Ed":90,"Ken R":85,"Scott":88,"Ron B":88}},{"date":"2026-04-08","scores":{"Chris":82,"Herb":92,"Dias":93,"Derrick":90}},{"date":"2026-04-10","scores":{"Keith":100,"Herb":92,"Ed":92,"Ken R":86,"TJ":83}},{"date":"2026-04-12","scores":{"Chris":80,"Keith":100,"Herb":79,"Ed":85,"Dias":90,"Ken R":93,"Derrick":86,"Scott":82,"Ron Choi":99}},{"date":"2026-04-18","scores":{"Chris":80,"Herb":88,"Ed":86,"Dias":88,"Ken R":95,"Brandon":77,"Derrick":86,"Scott":91}},{"date":"2026-04-20","scores":{"Chris":89,"Keith":101,"Herb":88,"Ken R":101,"Scott":88,"Song":90}},{"date":"2026-04-21","scores":{"Chris":92,"Keith":105,"Herb":92,"Ken R":90,"Scott":85,"Song":88}},{"date":"2026-04-22","scores":{"Chris":89,"Keith":99,"Scott":81,"Kyu":110}},{"date":"2026-04-23","scores":{"Chris":89,"Keith":101,"Herb":101,"Scott":85}},{"date":"2026-04-24","scores":{"Ed":78,"Brandon":77}},{"date":"2026-04-26","scores":{"Chris":79,"Keith":102,"Ed":84,"Dias":88,"Derrick":85,"Scott":82}},{"date":"2026-05-01","scores":{"Chris":82,"Keith":96,"Herb":86,"Ed":78,"Ken R":94,"TJ":74,"Cam":93,"Brandon":75}},{"date":"2026-05-03","scores":{"Chris":84,"Keith":97,"Dias":93,"Derrick":83,"Scott":87,"Ron B":97}},{"date":"2026-05-06","scores":{"Herb":89,"Ed":85,"Cam":92,"Stan":91}},{"date":"2026-05-08","scores":{"Chris":90,"Herb":91,"Ed":95,"Ken R":103,"Ron B":98}},{"date":"2026-05-13","scores":{"Chris":81,"Herb":88,"Ed":82,"Cam":92}},{"date":"2026-05-15","scores":{"Chris":74,"Keith":93,"Herb":87,"Ed":83,"Ken R":94,"Cam":88,"Ron B":101,"Stan":83}},{"date":"2026-05-17","scores":{"Chris":83,"Keith":94,"Herb":81,"Ed":94,"Dias":91,"Kyu":115,"Emming":99}},{"date":"2026-05-20","scores":{"Herb":94,"Ed":84,"Cam":92,"Brandon":73,"Derrick":89,"Stan":84}},{"date":"2026-05-22","scores":{"Chris":81,"Ed":85,"Ken R":92,"Cam":99}},{"date":"2026-05-24","scores":{"Chris":80,"Herb":93,"Ed":92,"Dias":92,"Derrick":79,"Stan":88}},{"date":"2026-05-29","scores":{"Chris":84,"Herb":89,"Ed":82,"Ron B":99}},{"date":"2026-05-31","scores":{"Chris":80,"Ed":84,"Dias":98,"Cam":92,"Derrick":82,"Scott":78,"Kyu":118}},{"date":"2026-06-05","scores":{"Chris":100,"Herb":83,"Ed":79,"Ken R":95}},{"date":"2026-06-07","scores":{"Chris":85,"Ed":89,"Derrick":88,"Scott":95,"Charles":107}},{"date":"2026-06-12","scores":{"Chris":79,"Herb":84,"TJ":77,"Brandon":78,"Jess Lujan":82}},{"date":"2026-06-14","scores":{"Herb":93,"Ed":83,"Dias":91,"Scott":84}},{"date":"2026-06-20","scores":{"Chris":87,"Scott":90,"Song":92}},{"date":"2026-06-21","scores":{"Chris":91,"Keith":96,"Ed":84,"Dias":95,"Brandon":74,"Scott":89,"Kyu":102,"Harry":112,"Sean Chu":95,"Song":91,"Frank Chen":90}},{"date":"2026-06-26","scores":{"Chris":82,"Keith":97,"Scott":91,"Song":90}},{"date":"2026-06-28","scores":{"Chris":78,"Keith":100,"Ed":81,"Dias":87,"Neil":89,"Scott":80,"Kyu":107,"Matt Frazier":98,"Harry":119,"Sean Chu":87,"Song":91}},{"date":"2026-07-03","scores":{"Chris":82,"TJ":81,"Scott":83,"Song":85}},{"date":"2026-07-11","scores":{"Chris":80,"Ed":89,"Scott":87}},{"date":"2026-07-12","scores":{"Chris":83,"Herb":93,"Ed":90,"Dias":98,"TJ":71,"Cam":92,"Scott":77,"Kyu":105,"Matt Frazier":93,"Bobby S":109}},{"date":"2026-07-17","scores":{"Chris":81,"Keith":105,"Herb":94,"Ed":95,"TJ":74,"Scott":88,"Ron B":92}},{"date":"2026-07-19","scores":{"Chris":85,"Keith":96,"Herb":84,"Ed":82,"Dias":93,"Scott":79,"Kyu":118,"Matt Frazier":95}},{"date":"2026-07-24","scores":{"Chris":92,"TJ":72}},{"date":"2026-07-26","scores":{"Chris":76,"Keith":94,"Herb":89,"Ed":79,"Dias":92,"Ken R":88,"Cam":96,"Neil":85,"Brandon":74,"Scott":80,"Pete T":93,"Ed H.":88,"Sean Chu":99,"Bobby S":119}}]};
+
+/* ================= STATE ================= */
+const LS_KEY = "tomodachi-golf-v1";
+let state = load();
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(LS_KEY)); if(s && s.rounds) return s; }catch(e){}
+  return seedState();
+}
+function seedState(){
+  return { players: SEED.players.slice(), rounds: SEED.rounds.map(r=>({date:r.date, scores:{...r.scores}})) };
+}
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+/* ================= HANDICAP ENGINE (matches R5.xlsx exactly) =================
+   Rolling average:
+     < 10 rounds  -> plain mean of all rounds
+     >= 10 rounds -> take the 10 most recent rounds, DROP the single worst
+                     (highest) score, average the remaining 9.
+   Strokes vs Par 72:
+     total = ROUND(avg - 72)  [half away from zero, like Excel]
+     even total -> F = B = ROUND((avg-72)/2)
+     odd  total -> F = CEIL((avg-72)/2), B = FLOOR((avg-72)/2)   (Front gets extra)
+================================================================================ */
+function r0(x){ return Math.sign(x)*Math.round(Math.abs(x)); }
+function totalOf(sc){ return (typeof sc === "number") ? sc : (sc.f + sc.b); }
+function scoresFor(name, rounds){
+  const out=[];
+  for(const r of rounds){ if(r.scores[name]!=null) out.push(totalOf(r.scores[name])); }
+  return out;
+}
+function rollingAvg(scores){
+  const n = scores.length;
+  if(n===0) return null;
+  if(n<10) return scores.reduce((a,b)=>a+b,0)/n;
+  const last10 = scores.slice(-10);
+  const sum = last10.reduce((a,b)=>a+b,0);
+  return (sum - Math.max(...last10))/9;
+}
+function strokesOf(avg){
+  const d = avg - 72;
+  const total = r0(d);
+  let f,b;
+  if(total % 2 === 0){ f = b = r0(d/2); } else { f = Math.ceil(d/2); b = Math.floor(d/2); }
+  return { f, b, total: f+b };
+}
+/* Apply the bigger half of an odd split to the harder nine.
+   strokesOf() puts the bigger number in .f, so "back harder" swaps the halves. */
+function orient(s, harder){
+  return harder==="back" ? { f:s.b, b:s.f, total:s.total } : { f:s.f, b:s.b, total:s.total };
+}
+function playerStats(name, rounds){
+  const sc = scoresFor(name, rounds);
+  const avg = rollingAvg(sc);
+  return { name, n: sc.length, avg, strokes: avg==null? null : strokesOf(avg) };
+}
+function hedge(avg){
+  if(avg <= 81.99) return ["GOLD","b-gold"];
+  if(avg <= 86.99) return ["SILVER","b-silver"];
+  return ["BRONZE","b-bronze"];
+}
+
+/* ================= PAYOUT ENGINE (per CLAUDE.md) ================= */
+function rankWithTies(items, key){
+  // items sorted asc by key; returns [{...item, rank, tied}]
+  const sorted = items.slice().sort((a,b)=>key(a)-key(b));
+  let out=[], i=0;
+  while(i<sorted.length){
+    let j=i; while(j+1<sorted.length && key(sorted[j+1])===key(sorted[i])) j++;
+    const tied = j>i;
+    for(let k=i;k<=j;k++) out.push({...sorted[k], rank:i+1, tied});
+    i=j+1;
+  }
+  return out;
+}
+function money(x){ const s = x.toFixed(2); return "$"+(s.endsWith(".00")? s.slice(0,-3) : s); }
+
+function computeResults(entries, preRounds, bet, harder){
+  // entries: [{name, f, b}]  preRounds: history BEFORE this round  bet: $/player
+  // harder: "front" | "back" — which nine gets the bigger half of an odd stroke split
+  harder = harder || "front";
+  const n = entries.length, pot = n*bet;
+  const potF = pot*0.25, potB = pot*0.25, pot1 = pot*0.35, pot2 = pot*0.15;
+  // pre-round strokes
+  const stats = {};
+  for(const e of entries){ stats[e.name] = playerStats(e.name, preRounds); }
+  // baseline = lowest total strokes (tie-break: lowest front)
+  let base = null;
+  for(const e of entries){
+    const s = orient(stats[e.name].strokes || {f:0,b:0,total:0}, harder);
+    if(!base || s.total < base.total || (s.total===base.total && s.f < base.f)) base = s;
+  }
+  const rows = entries.map(e=>{
+    const s = orient(stats[e.name].strokes || {f:0,b:0,total:0}, harder);
+    const relF = s.f - base.f, relB = s.b - base.b;
+    return { name:e.name, gf:e.f, gb:e.b, gt:e.f+e.b,
+      sf:s.f, sb:s.b, st:s.total, relF, relB, relT:relF+relB,
+      nf:e.f-relF, nb:e.b-relB, nt:(e.f-relF)+(e.b-relB), win:0 };
+  });
+  const front = rankWithTies(rows, r=>r.nf);
+  const back  = rankWithTies(rows, r=>r.nb);
+  const tot   = rankWithTies(rows, r=>r.nt);
+  const pay = {}; rows.forEach(r=>pay[r.name]=0);
+  const f1 = front.filter(r=>r.rank===1); f1.forEach(r=>pay[r.name]+=potF/f1.length);
+  const b1 = back.filter(r=>r.rank===1);  b1.forEach(r=>pay[r.name]+=potB/b1.length);
+  const t1 = tot.filter(r=>r.rank===1);
+  let tieNote = "";
+  if(t1.length>1){
+    t1.forEach(r=>pay[r.name]+=(pot1+pot2)/t1.length);
+    tieNote = `T1 tie (${t1.length} players): 1st ${money(pot1)} + 2nd ${money(pot2)} = ${money(pot1+pot2)} &divide; ${t1.length} = ${money((pot1+pot2)/t1.length)} each. No separate 2nd-place payout.`;
+  } else {
+    pay[t1[0].name]+=pot1;
+    const t2 = tot.filter(r=>r.rank===2);
+    if(t2.length>1){
+      t2.forEach(r=>pay[r.name]+=pot2/t2.length);
+      tieNote = `T2 tie (${t2.length} players): 2nd money ${money(pot2)} &divide; ${t2.length} = ${money(pot2/t2.length)} each.`;
+    } else if(t2.length===1){ pay[t2[0].name]+=pot2; }
+  }
+  return { n, bet, pot, potF, potB, pot1, pot2, rows, front, back, tot, pay, tieNote, base, harder };
+}
+
+/* ================= FUNNY SUMMARY ================= */
+function funnySummary(res){
+  const tot = res.tot;
+  const champ = tot.filter(r=>r.rank===1).map(r=>r.name).join(" & ");
+  const last = tot[tot.length-1];
+  const fwin = res.front.filter(r=>r.rank===1).map(r=>r.name).join(" & ");
+  const bwin = res.back.filter(r=>r.rank===1).map(r=>r.name).join(" & ");
+  const margin = tot.length>1 ? tot[1].nt - tot[0].nt : 0;
+  const bigWin = Object.entries(res.pay).sort((a,b)=>b[1]-a[1])[0];
+  const styles = [
+    ()=>`🎙️ And that's a wrap from the links! ${champ} takes the crown${margin>0?` by ${margin}`:" in a photo finish"}, with ${fwin} sprinting out of the gate on the front and ${bwin} closing like a freight train on the back. ${last.name} generously donated ${money(res.bet)} to the cause today — the group thanks you for your service. See you next round, gentlemen.`,
+    ()=>`🔥 Light roast: ${champ} walked off with ${money(bigWin[1])} and will absolutely be mentioning it in the group chat for the next two weeks. ${last.name} shot a net ${last.nt} and is currently googling "how to get strokes back." The handicap committee (all of us) will be watching ${fwin}'s front-nine ${res.front[0].nf} with great suspicion.`,
+    ()=>`⚖️ Balanced take: ${fwin} owned the front, ${bwin} owned the back, and ${champ} owned the day. ${last.name} had a rough one, but that's exactly how the rolling 10 works — today's pain is next month's strokes. Everybody paid, somebody got paid, and the friendship survived. Golf wins again.`
+  ];
+  return styles[Math.floor(Math.random()*styles.length)]();
+}
+
+/* ================= RENDER: GAME-DAY CARD ================= */
+function fmt2(x){ return x==null? "—" : x.toFixed(2); }
+function renderCard(){
+  const rounds = state.rounds;
+  const lastDate = rounds.length? rounds[rounds.length-1].date : null;
+  document.getElementById("gd-through").textContent = lastDate? "Data through: "+usDate(lastDate) : "No rounds yet";
+  const all = state.players.map(p=>playerStats(p, rounds)).filter(s=>s.n>0);
+  const elig = all.filter(s=>s.n>=10).sort((a,b)=>a.avg-b.avg);
+  const prov = all.filter(s=>s.n<10).sort((a,b)=>a.avg-b.avg);
+  // prior card = strokes before the most recent date's rounds
+  const priorRounds = lastDate? rounds.filter(r=>r.date!==lastDate) : [];
+  const prior = {}; state.players.forEach(p=>{ prior[p]=playerStats(p, priorRounds); });
+  // stats bar
+  const gavg = elig.length? elig.reduce((a,s)=>a+s.avg,0)/elig.length : 0;
+  const lo = elig[0], hi = elig[elig.length-1];
+  document.getElementById("gd-stats").innerHTML = `
+    <div class="stat"><div class="lbl">Eligible</div><div class="val">${elig.length}</div><div class="who">members</div></div>
+    <div class="stat"><div class="lbl">Lowest Avg</div><div class="val">${lo?fmt2(lo.avg):"—"}</div><div class="who">${lo?lo.name:""}</div></div>
+    <div class="stat"><div class="lbl">Group Avg</div><div class="val">${fmt2(gavg)}</div><div class="who">all 18</div></div>
+    <div class="stat"><div class="lbl">Highest Avg</div><div class="val">${hi?fmt2(hi.avg):"—"}</div><div class="who">${hi?hi.name:""}</div></div>`;
+  // main table
+  let html = `<tr><th>#</th><th style="text-align:left">Player</th><th>Strokes</th><th>10-Avg</th><th>Rnds</th><th>Chg</th><th>Hedge</th></tr>`;
+  const changes = {gained:[], lost:[], same:[]};
+  elig.forEach((s,i)=>{
+    const [hName,hCls] = hedge(s.avg);
+    const p = prior[s.name];
+    let chg = `<span class="chg-none">—</span>`;
+    if(p && p.strokes && p.n>=10){
+      const dN = (p.strokes.f+p.strokes.b)-(s.strokes.f+s.strokes.b);
+      if(dN>0){ chg = `<span class="chg-dn">18h -${dN}</span>`; changes.lost.push(`${s.name}: ${p.strokes.f} / ${p.strokes.b} → ${s.strokes.f} / ${s.strokes.b}`); }
+      else if(dN<0){ chg = `<span class="chg-up">18h +${-dN}</span>`; changes.gained.push(`${s.name}: ${p.strokes.f} / ${p.strokes.b} → ${s.strokes.f} / ${s.strokes.b}`); }
+      else if(p.strokes.f!==s.strokes.f){ const d9 = s.strokes.f>p.strokes.f ? "9h shift" : "9h shift"; chg = `<span class="chg-none">${d9}</span>`; changes.same.push(s.name); }
+      else changes.same.push(s.name);
+    }
+    html += `<tr><td><span class="rank">${i+1}</span></td><td class="pl">${s.name}</td>
+      <td><b>${s.strokes.f} / ${s.strokes.b}</b></td><td class="avg">${fmt2(s.avg)}</td>
+      <td>${s.n}</td><td>${chg}</td><td><span class="badge ${hCls}">${hName}</span></td></tr>`;
+  });
+  document.getElementById("gd-table").innerHTML = html;
+  // changes box
+  let ch = "";
+  if(changes.gained.length) ch += `<div style="margin-bottom:8px"><b class="chg-up">▲ Gained Strokes</b><div class="note">${changes.gained.join("<br>")}</div></div>`;
+  if(changes.lost.length) ch += `<div style="margin-bottom:8px"><b class="chg-dn">▼ Lost Strokes</b><div class="note">${changes.lost.join("<br>")}</div></div>`;
+  ch += changes.gained.length||changes.lost.length ? `<div><b style="color:var(--muted)">No Change:</b> <span class="note">${changes.same.join(", ")||"—"}</span></div>` : `<div class="note">No stroke changes vs the prior card.</div>`;
+  document.getElementById("gd-changes").innerHTML = ch;
+  // provisional
+  let ph = `<tr><th style="text-align:left">Player</th><th>Rnds</th><th>Avg</th><th>Strokes</th></tr>`;
+  prov.forEach(s=>{ ph += `<tr><td class="pl">${s.name}</td><td>${s.n}</td><td class="avg">${fmt2(s.avg)}</td><td>${s.strokes.f} / ${s.strokes.b}</td></tr>`; });
+  document.getElementById("gd-provisional").innerHTML = prov.length? ph : `<tr><td class="note">None</td></tr>`;
+}
+
+/* ================= NEW ROUND ================= */
+let selected = new Set();
+let harderSide = "front";
+document.querySelectorAll("#r-harder .chip").forEach(b=>b.onclick=()=>{
+  harderSide = b.dataset.h;
+  document.querySelectorAll("#r-harder .chip").forEach(x=>x.classList.toggle("on", x.dataset.h===harderSide));
+  renderGrid();
+});
+function renderRound(){
+  const el = document.getElementById("r-date");
+  if(!el.value) el.value = new Date().toISOString().slice(0,10);
+  const stats = {}; state.players.forEach(p=>stats[p]=playerStats(p,state.rounds));
+  const chips = state.players.slice().sort((a,b)=>{
+    const A=stats[a], B=stats[b];
+    if((B.n>0)-(A.n>0)) return (B.n>0)-(A.n>0);
+    return a.localeCompare(b);
+  }).map(p=>{
+    const s = stats[p];
+    const st = s.strokes? `${s.strokes.f}/${s.strokes.b}` : "new";
+    return `<button class="chip ${selected.has(p)?"on":""}" data-p="${p}">${p} <span class="st">${st}</span></button>`;
+  }).join("");
+  document.getElementById("r-chips").innerHTML = chips;
+  document.getElementById("r-count").textContent = selected.size? `(${selected.size} selected)` : "";
+  document.querySelectorAll("#r-chips .chip").forEach(c=>c.onclick=()=>{
+    const p=c.dataset.p; selected.has(p)? selected.delete(p) : selected.add(p);
+    renderRound(); renderGrid();
+  });
+  renderGrid();
+}
+function renderGrid(){
+  const box = document.getElementById("r-scores-box");
+  if(!selected.size){ box.style.display="none"; return; }
+  box.style.display="block";
+  const grid = document.getElementById("r-grid");
+  const prev = {}; grid.querySelectorAll("input").forEach(i=>prev[i.id]=i.value);
+  let h = `<div class="hd" style="text-align:left">Player (strokes)</div><div class="hd">Front 9</div><div class="hd">Back 9</div><div class="hd">Total</div>`;
+  for(const p of selected){
+    const s = playerStats(p, state.rounds);
+    const os = s.strokes? orient(s.strokes, harderSide) : null;
+    const st = os? `F${os.f} / B${os.b}` : "no history";
+    const idF=`gf-${cssId(p)}`, idB=`gb-${cssId(p)}`;
+    h += `<div class="nm">${p}<span class="st">${st} &middot; ${s.n} rds</span></div>
+      <div><input type="number" inputmode="numeric" id="${idF}" value="${prev[idF]||""}" placeholder="—"></div>
+      <div><input type="number" inputmode="numeric" id="${idB}" value="${prev[idB]||""}" placeholder="—"></div>
+      <div class="tot" id="tt-${cssId(p)}">—</div>`;
+  }
+  grid.innerHTML = h;
+  grid.querySelectorAll("input").forEach(i=>i.oninput=()=>{
+    for(const p of selected){
+      const f=+document.getElementById(`gf-${cssId(p)}`).value||0, b=+document.getElementById(`gb-${cssId(p)}`).value||0;
+      document.getElementById(`tt-${cssId(p)}`).textContent = (f&&b)? f+b : "—";
+    }
+  });
+}
+function cssId(p){ return p.replace(/[^a-z0-9]/gi,"_"); }
+
+/* ================= RESULTS RENDER ================= */
+let pendingRound = null; // {date, course, bet, entries}
+let currentRes = null, currentMeta = null;
+function showResults(meta, preRounds, savable){
+  const res = computeResults(meta.entries, preRounds, meta.bet, meta.harder);
+  currentRes = res; currentMeta = meta;
+  const secTbl = (ranked, netKey, grossKey, potShare, winners)=>{
+    let t = `<div class="tblwrap"><table><tr><th>Rk</th><th style="text-align:left">Player</th><th>Gross</th><th>Str</th><th>Net</th><th>Payout</th></tr>`;
+    ranked.forEach(r=>{
+      const w = winners[r.name]||0;
+      t += `<tr><td>${r.tied?"T":""}${r.rank}</td><td class="pl">${r.name}</td><td>${r[grossKey]}</td><td>${r._str}</td><td><b>${r[netKey]}</b></td><td class="${w?"money":"zero"}">${w?money(w):"$0"}</td></tr>`;
+    });
+    return t+`</table></div>`;
+  };
+  // per-section winner maps
+  const wF={},wB={},wT={};
+  const f1=res.front.filter(r=>r.rank===1); f1.forEach(r=>wF[r.name]=res.potF/f1.length);
+  const b1=res.back.filter(r=>r.rank===1); b1.forEach(r=>wB[r.name]=res.potB/b1.length);
+  const t1=res.tot.filter(r=>r.rank===1);
+  if(t1.length>1){ t1.forEach(r=>wT[r.name]=(res.pot1+res.pot2)/t1.length); }
+  else { wT[t1[0].name]=res.pot1; const t2=res.tot.filter(r=>r.rank===2); t2.forEach(r=>wT[r.name]=res.pot2/t2.length); }
+  res.front.forEach(r=>r._str=`${r.relF}`); res.back.forEach(r=>r._str=`${r.relB}`); res.tot.forEach(r=>r._str=`${r.relF}/${r.relB}`);
+  let h = `
+  <div class="card-box"><h3>${usDate(meta.date)}${meta.course? " &middot; "+meta.course:""}</h3>
+    <div class="pot">
+      <div class="cell"><div class="l">Pot (${res.n}×${money(res.bet)})</div><div class="v">${money(res.pot)}</div></div>
+      <div class="cell"><div class="l">Front 25%</div><div class="v">${money(res.potF)}</div></div>
+      <div class="cell"><div class="l">Back 25%</div><div class="v">${money(res.potB)}</div></div>
+      <div class="cell"><div class="l">1st 35% / 2nd 15%</div><div class="v">${money(res.pot1)} / ${money(res.pot2)}</div></div>
+    </div>
+    <div class="note">Harder 9: <b>${res.harder==="back"?"Back":"Front"}</b> (bigger stroke split applied there). Baseline (lowest strokes): <b>${res.rows.find(r=>r.relT===0 && r.st===res.base.total)?.name || "—"}</b> at F${res.base.f} / B${res.base.b}. Net = gross − relative strokes per 9.</div>
+  </div>
+  <h2 class="sec">Front 9</h2>${secTbl(res.front,"nf","gf",res.potF,wF)}
+  <h2 class="sec">Back 9</h2>${secTbl(res.back,"nb","gb",res.potB,wB)}
+  <h2 class="sec">Total Net</h2>${secTbl(res.tot,"nt","gt",res.pot1,wT)}
+  ${res.tieNote? `<div class="tiemath">🧮 ${res.tieNote}</div>`:""}
+  <h2 class="sec">Final Summary</h2>
+  <div class="tblwrap"><table><tr><th style="text-align:left">Player</th><th>F</th><th>B</th><th>Tot</th><th>Str</th><th>Net</th><th>Winnings</th><th>+/−</th></tr>
+  ${res.rows.slice().sort((a,b)=>res.pay[b.name]-res.pay[a.name]).map(r=>{
+    const w=res.pay[r.name], net=w-res.bet;
+    return `<tr><td class="pl">${r.name}</td><td>${r.gf}</td><td>${r.gb}</td><td>${r.gt}</td><td>${r.relF}/${r.relB}</td><td><b>${r.nt}</b></td><td class="${w?"money":"zero"}">${w?money(w):"$0"}</td><td class="${net>0?"money":net<0?"chg-dn":"zero"}">${net>0?"+":""}${money(Math.abs(net)).replace("$", net<0?"-$":"$")}</td></tr>`;
+  }).join("")}
+  </table></div>
+  <h2 class="sec">The Word</h2>
+  <div class="funny">${funnySummary(res)}</div>`;
+  if(savable){
+    // preview of post-round stroke changes
+    const after = state.rounds.concat([{date:meta.date, scores:Object.fromEntries(meta.entries.map(e=>[e.name,{f:e.f,b:e.b}]))}]);
+    h += `<h2 class="sec">Strokes For Next Game</h2><div class="tblwrap"><table><tr><th style="text-align:left">Player</th><th>Rnds</th><th>New Avg</th><th>New Str</th><th>Was</th><th>Move</th></tr>`;
+    meta.entries.forEach(e=>{
+      const was = playerStats(e.name, state.rounds), now = playerStats(e.name, after);
+      const mv = (was.strokes&&now.strokes)? (now.strokes.total-was.strokes.total) : 0;
+      h += `<tr><td class="pl">${e.name}</td><td>${now.n}</td><td class="avg">${fmt2(now.avg)}</td><td><b>${now.strokes.f} / ${now.strokes.b}</b></td><td>${was.strokes? was.strokes.f+" / "+was.strokes.b:"—"}</td>
+        <td>${mv<0?`<span class="chg-dn">▼ ${mv}</span>`:mv>0?`<span class="chg-up">▲ +${mv}</span>`:`<span class="chg-none">—</span>`}</td></tr>`;
+    });
+    h += `</table></div>`;
+  }
+  document.getElementById("res-body").innerHTML = h;
+  document.getElementById("res-savebar").style.display = savable? "flex":"none";
+  document.getElementById("res-backbar").style.display = savable? "none":"flex";
+  switchView("results");
+}
+
+/* ================= WHATSAPP CARD ================= */
+function whatsappCard(res, meta){
+  const L=[];
+  L.push(`🏌️ *TOMODACHI GOLF* — ${usDate(meta.date)}${meta.course? " @ "+meta.course:""}`);
+  L.push(`━━━━━━━━━━━━━━━━━━`);
+  L.push(`💰 POT: ${res.n} × ${money(res.bet)} = *${money(res.pot)}*`);
+  L.push(`Front ${money(res.potF)} | Back ${money(res.potB)} | 1st ${money(res.pot1)} | 2nd ${money(res.pot2)}`);
+  L.push(`⛳ Harder 9: ${res.harder==="back"?"Back":"Front"} (bigger stroke split applied there)`);
+  const sec=(title,ranked,netKey,grossKey,winners)=>{
+    L.push(``); L.push(`*${title}*`);
+    ranked.forEach(r=>{
+      const w=winners[r.name]||0;
+      L.push(`${r.tied?"T":""}${r.rank}. ${r.name} — ${r[grossKey]} (net ${r[netKey]})${w?" 💵 "+money(w):""}`);
+    });
+  };
+  const wF={},wB={},wT={};
+  const f1=res.front.filter(r=>r.rank===1); f1.forEach(r=>wF[r.name]=res.potF/f1.length);
+  const b1=res.back.filter(r=>r.rank===1); b1.forEach(r=>wB[r.name]=res.potB/b1.length);
+  const t1=res.tot.filter(r=>r.rank===1);
+  if(t1.length>1){ t1.forEach(r=>wT[r.name]=(res.pot1+res.pot2)/t1.length); }
+  else { wT[t1[0].name]=res.pot1; res.tot.filter(r=>r.rank===2).forEach((r,_,arr)=>wT[r.name]=res.pot2/arr.length); }
+  sec("FRONT 9 (25%)",res.front,"nf","gf",wF);
+  sec("BACK 9 (25%)",res.back,"nb","gb",wB);
+  sec("TOTAL NET (50%)",res.tot,"nt","gt",wT);
+  if(res.tieNote) L.push(`🧮 ${res.tieNote.replace(/&divide;/g,"÷")}`);
+  L.push(``); L.push(`*FINAL SUMMARY*`);
+  res.rows.slice().sort((a,b)=>res.pay[b.name]-res.pay[a.name]).forEach(r=>{
+    const w=res.pay[r.name], net=w-res.bet;
+    L.push(`${r.name}: F${r.gf} B${r.gb} T${r.gt} | str ${r.relF}/${r.relB} | net ${r.nt} | ${w?money(w):"$0"} (${net>=0?"+":"-"}${money(Math.abs(net)).slice(1)})`);
+  });
+  L.push(``);
+  L.push(document.querySelector(".funny")? "😄 "+document.querySelector(".funny").textContent : "");
+  // updated strokes
+  const after = state.rounds.some(r=>r.date===meta.date && r._id===meta._id) ? state.rounds
+    : state.rounds.concat([{date:meta.date, scores:Object.fromEntries(meta.entries.map(e=>[e.name,{f:e.f,b:e.b}]))}]);
+  L.push(``); L.push(`*UPDATED STROKES (next game)*`);
+  meta.entries.forEach(e=>{
+    const before = playerStats(e.name, after.filter(r=>!(r.date===meta.date && r.scores[e.name] && totalOf(r.scores[e.name])===e.f+e.b)));
+    const now = playerStats(e.name, after);
+    const mv = (before.strokes&&now.strokes)? now.strokes.total-before.strokes.total : 0;
+    L.push(`${e.name}: ${now.n} rds | avg ${fmt2(now.avg)} | ${now.strokes.f}/${now.strokes.b} (was ${before.strokes? before.strokes.f+"/"+before.strokes.b:"—"}) ${mv<0?"▼":mv>0?"▲":"—"}`);
+  });
+  return L.join("\n");
+}
+
+/* ================= HISTORY ================= */
+function renderHistory(){
+  const list = document.getElementById("hist-list");
+  const items = state.rounds.map((r,i)=>({r,i})).reverse();
+  list.innerHTML = items.map(({r,i})=>{
+    const names = Object.keys(r.scores);
+    const hasFB = names.some(n=>typeof r.scores[n]==="object");
+    return `<div class="hist-item" data-i="${i}">
+      <div><div class="d">${usDate(r.date)}${r.course? " · "+r.course:""}</div>
+      <div class="m">${names.length} players${hasFB? " · payouts available":" · totals only (Excel import)"}</div></div>
+      <div style="display:flex;gap:6px">${hasFB?`<button class="btn sm ghost" data-view="${i}">View</button>`:""}<button class="btn sm danger" data-del="${i}">✕</button></div>
+    </div>`;
+  }).join("") || `<div class="note">No rounds yet.</div>`;
+  list.querySelectorAll("[data-del]").forEach(b=>b.onclick=(ev)=>{
+    ev.stopPropagation();
+    const i=+b.dataset.del;
+    if(confirm(`Delete round ${usDate(state.rounds[i].date)}? This changes rolling averages.`)){
+      state.rounds.splice(i,1); save(); renderAll(); toast("Round deleted");
+    }
+  });
+  list.querySelectorAll("[data-view]").forEach(b=>b.onclick=(ev)=>{
+    ev.stopPropagation();
+    const i=+b.dataset.view, r=state.rounds[i];
+    const entries = Object.entries(r.scores).filter(([,s])=>typeof s==="object").map(([name,s])=>({name,f:s.f,b:s.b}));
+    showResults({date:r.date, course:r.course, bet:r.bet||20, harder:r.harder||"front", entries, _id:i}, state.rounds.slice(0,i), false);
+  });
+}
+
+/* ================= SETTINGS ================= */
+function renderSettings(){
+  document.getElementById("s-info").textContent =
+    `${state.players.length} players · ${state.rounds.length} rounds · seeded from Tomodachi Average Scores R5.xlsx (through ${state.rounds.length? usDate(state.rounds[state.rounds.length-1].date):"—"}) · data stored on this device`;
+}
+
+/* ================= HELPERS / WIRING ================= */
+function usDate(iso){ const [y,m,d]=iso.split("-"); return `${+m}/${+d}/${y}`; }
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200); }
+function switchView(v){
+  document.querySelectorAll(".view").forEach(s=>s.classList.remove("active"));
+  document.getElementById("view-"+v).classList.add("active");
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ switchView(b.dataset.v); if(b.dataset.v==="round") renderRound(); });
+function renderAll(){ renderCard(); renderHistory(); renderSettings(); }
+
+document.getElementById("r-calc").onclick = ()=>{
+  if(selected.size<2){ toast("Select at least 2 players"); return; }
+  const entries=[];
+  for(const p of selected){
+    const f=+document.getElementById(`gf-${cssId(p)}`).value, b=+document.getElementById(`gb-${cssId(p)}`).value;
+    if(!f||!b){ toast(`Missing scores for ${p}`); return; }
+    entries.push({name:p,f,b});
+  }
+  const meta = { date: document.getElementById("r-date").value, course: document.getElementById("r-course").value.trim(),
+                 bet: +document.getElementById("r-bet").value||20, harder: harderSide, entries };
+  pendingRound = meta;
+  showResults(meta, state.rounds, true);
+};
+document.getElementById("res-save").onclick = ()=>{
+  if(!pendingRound) return;
+  const m = pendingRound;
+  state.rounds.push({ date:m.date, course:m.course||undefined, bet:m.bet, harder:m.harder,
+    scores:Object.fromEntries(m.entries.map(e=>[e.name,{f:e.f,b:e.b}])) });
+  state.rounds.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  save(); pendingRound=null; selected=new Set();
+  document.querySelectorAll("#r-grid input").forEach(i=>i.value="");
+  renderAll(); switchView("card"); toast("Round saved — card updated ✅");
+};
+document.getElementById("res-back").onclick = ()=>switchView("history");
+document.getElementById("res-copy").onclick = async ()=>{
+  if(!currentRes) return;
+  const txt = whatsappCard(currentRes, currentMeta);
+  try{ await navigator.clipboard.writeText(txt); toast("WhatsApp card copied 📋"); }
+  catch(e){ prompt("Copy this:", txt); }
+};
+document.getElementById("s-add").onclick = ()=>{
+  const n = document.getElementById("s-newname").value.trim();
+  if(!n) return;
+  if(state.players.includes(n)){ toast("Player already exists"); return; }
+  state.players.push(n); save(); document.getElementById("s-newname").value="";
+  renderAll(); toast(`${n} added to roster`);
+};
+document.getElementById("s-export").onclick = ()=>{
+  const blob = new Blob([JSON.stringify(state,null,1)],{type:"application/json"});
+  const a = document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download = `tomodachi-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
+};
+document.getElementById("s-import").onclick = ()=>document.getElementById("s-file").click();
+document.getElementById("s-file").onchange = (ev)=>{
+  const f = ev.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{ try{
+    const s = JSON.parse(rd.result);
+    if(!s.players||!s.rounds) throw 0;
+    state=s; save(); renderAll(); toast("Backup imported ✅");
+  }catch(e){ toast("Invalid backup file"); } };
+  rd.readAsText(f);
+};
+document.getElementById("s-reset").onclick = ()=>{
+  if(confirm("Reset ALL data back to the R5 Excel seed? Rounds entered in the app will be lost.")){
+    state = seedState(); save(); renderAll(); toast("Reset to R5 seed");
+  }
+};
+
+renderAll();
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+</script>
+</body>
+</html>
