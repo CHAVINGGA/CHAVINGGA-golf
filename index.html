@@ -117,6 +117,7 @@ summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;pad
   <div class="tblwrap"><table id="gd-table"></table></div>
   <h2 class="sec">Stroke Allocation Changes</h2>
   <div class="card-box" id="gd-changes"></div>
+  <div class="btnrow"><button class="btn" id="gd-img">🖼 Share Game-Day Card Image</button></div>
   <details><summary>Players under 10 rounds (provisional)</summary>
     <div class="tblwrap"><table id="gd-provisional"></table></div>
   </details>
@@ -126,7 +127,12 @@ summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;pad
 <!-- ============ NEW ROUND ============ -->
 <section id="view-round" class="view">
   <h2 class="sec">New Round</h2>
-  <div class="card-box">
+  <div class="card-box" id="r-lockbox" style="display:none;text-align:center">
+    <h3>🔒 Admins Only</h3>
+    <div class="note" style="text-align:center">Entering scores and saving rounds requires the admin PIN.<br>Everyone else can browse the Card and History freely.</div>
+    <div class="btnrow"><button class="btn" id="r-unlock">🔓 Unlock Admin</button></div>
+  </div>
+  <div class="card-box" id="r-formbox">
     <label class="f">Date</label><input type="date" id="r-date">
     <label class="f">Course</label><input type="text" id="r-course" placeholder="e.g. Country Club of the Pacific">
     <label class="f">Bet per player ($)</label><input type="number" id="r-bet" value="20" min="1" step="1">
@@ -152,6 +158,7 @@ summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;pad
   <div id="res-body"></div>
   <div class="btnrow">
     <button class="btn ghost" id="res-copy">📋 Copy WhatsApp Card</button>
+    <button class="btn ghost" id="res-img">🖼 Share Image</button>
   </div>
   <div class="btnrow" id="res-savebar">
     <button class="btn" id="res-save">✅ Finalize &amp; Save Round</button>
@@ -175,7 +182,14 @@ summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;pad
     <div style="display:flex;gap:8px"><input type="text" id="s-newname" placeholder="Player name"><button class="btn sm" id="s-add">Add</button></div>
   </div>
   <div class="card-box">
+    <h3>🔐 Admin</h3>
+    <div class="note" id="adm-status"></div>
+    <div class="btnrow"><button class="btn ghost" id="adm-unlock">🔓 Unlock</button><button class="btn ghost" id="adm-lock">🔒 Lock</button></div>
+    <div class="btnrow"><button class="btn ghost" id="adm-pin">Set / Change Admin PIN</button></div>
+  </div>
+  <div class="card-box">
     <h3>Data</h3>
+    <div class="btnrow"><button class="btn ghost" id="s-xlsx">📊 Export Excel (R5 format)</button></div>
     <div class="btnrow"><button class="btn ghost" id="s-export">⬇ Export Backup (JSON)</button></div>
     <div class="btnrow"><button class="btn ghost" id="s-import">⬆ Import Backup</button><input type="file" id="s-file" accept=".json" style="display:none"></div>
     <div class="btnrow"><button class="btn danger" id="s-reset">Reset to Excel Seed (R5)</button></div>
@@ -208,6 +222,39 @@ function seedState(){
   return { players: SEED.players.slice(), rounds: SEED.rounds.map(r=>({date:r.date, scores:{...r.scores}})) };
 }
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+/* ================= ADMIN (PIN gate) ================= */
+const ADM_KEY = "tomodachi-admin-ok";
+async function sha256hex(s){
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+function isAdmin(){ return !state.adminHash || localStorage.getItem(ADM_KEY)===state.adminHash; }
+async function unlockAdmin(){
+  if(!state.adminHash){ toast("No PIN set yet — this device is admin"); return true; }
+  const pin = prompt("Enter admin PIN:");
+  if(pin==null) return false;
+  if(await sha256hex(pin)===state.adminHash){
+    localStorage.setItem(ADM_KEY, state.adminHash);
+    toast("Admin unlocked 🔓"); renderAll(); return true;
+  }
+  toast("Wrong PIN"); return false;
+}
+function lockAdmin(){
+  if(!state.adminHash){ toast("Set a PIN first — without one, everyone is admin"); return; }
+  localStorage.removeItem(ADM_KEY); toast("Admin locked 🔒"); renderAll();
+}
+async function changePin(){
+  if(state.adminHash && !isAdmin()){ if(!await unlockAdmin()) return; }
+  const p1 = prompt(state.adminHash? "New admin PIN (4+ characters):" : "Create the admin PIN (4+ characters). Share it only with people you make admin:");
+  if(p1==null) return;
+  if(p1.length<4){ toast("PIN must be at least 4 characters"); return; }
+  const p2 = prompt("Re-enter the PIN to confirm:");
+  if(p2!==p1){ toast("PINs didn't match"); return; }
+  state.adminHash = await sha256hex(p1);
+  localStorage.setItem(ADM_KEY, state.adminHash);
+  save(); renderAll(); toast("Admin PIN set ✅");
+}
 
 /* ================= HANDICAP ENGINE (matches R5.xlsx exactly) =================
    Rolling average:
@@ -335,19 +382,35 @@ function funnySummary(res){
 
 /* ================= RENDER: GAME-DAY CARD ================= */
 function fmt2(x){ return x==null? "—" : x.toFixed(2); }
-function renderCard(){
+function cardData(){
   const rounds = state.rounds;
   const lastDate = rounds.length? rounds[rounds.length-1].date : null;
-  document.getElementById("gd-through").textContent = lastDate? "Data through: "+usDate(lastDate) : "No rounds yet";
   const all = state.players.map(p=>playerStats(p, rounds)).filter(s=>s.n>0);
   const elig = all.filter(s=>s.n>=10).sort((a,b)=>a.avg-b.avg);
   const prov = all.filter(s=>s.n<10).sort((a,b)=>a.avg-b.avg);
   // prior card = strokes before the most recent date's rounds
   const priorRounds = lastDate? rounds.filter(r=>r.date!==lastDate) : [];
   const prior = {}; state.players.forEach(p=>{ prior[p]=playerStats(p, priorRounds); });
-  // stats bar
   const gavg = elig.length? elig.reduce((a,s)=>a+s.avg,0)/elig.length : 0;
-  const lo = elig[0], hi = elig[elig.length-1];
+  // per-player change vs prior card + gained/lost lists
+  const changes = {gained:[], lost:[], same:[]}, chg = {};
+  elig.forEach(s=>{
+    const p = prior[s.name];
+    if(p && p.strokes && p.n>=10){
+      const dN = (p.strokes.f+p.strokes.b)-(s.strokes.f+s.strokes.b);
+      chg[s.name] = dN;
+      const arrow = `${p.strokes.f} / ${p.strokes.b} → ${s.strokes.f} / ${s.strokes.b}`;
+      if(dN>0){ changes.lost.push(`${s.name}: ${arrow}`); }
+      else if(dN<0){ changes.gained.push(`${s.name}: ${arrow}`); }
+      else changes.same.push(s.name);
+    } else chg[s.name] = null;
+  });
+  const priorDate = priorRounds.length? priorRounds[priorRounds.length-1].date : null;
+  return { lastDate, priorDate, elig, prov, prior, gavg, lo:elig[0], hi:elig[elig.length-1], changes, chg };
+}
+function renderCard(){
+  const { lastDate, elig, prov, prior, gavg, lo, hi, changes, chg: chgMap } = cardData();
+  document.getElementById("gd-through").textContent = lastDate? "Data through: "+usDate(lastDate) : "No rounds yet";
   document.getElementById("gd-stats").innerHTML = `
     <div class="stat"><div class="lbl">Eligible</div><div class="val">${elig.length}</div><div class="who">members</div></div>
     <div class="stat"><div class="lbl">Lowest Avg</div><div class="val">${lo?fmt2(lo.avg):"—"}</div><div class="who">${lo?lo.name:""}</div></div>
@@ -355,18 +418,12 @@ function renderCard(){
     <div class="stat"><div class="lbl">Highest Avg</div><div class="val">${hi?fmt2(hi.avg):"—"}</div><div class="who">${hi?hi.name:""}</div></div>`;
   // main table
   let html = `<tr><th>#</th><th style="text-align:left">Player</th><th>Strokes</th><th>10-Avg</th><th>Rnds</th><th>Chg</th><th>Hedge</th></tr>`;
-  const changes = {gained:[], lost:[], same:[]};
   elig.forEach((s,i)=>{
     const [hName,hCls] = hedge(s.avg);
-    const p = prior[s.name];
+    const dN = chgMap[s.name];
     let chg = `<span class="chg-none">—</span>`;
-    if(p && p.strokes && p.n>=10){
-      const dN = (p.strokes.f+p.strokes.b)-(s.strokes.f+s.strokes.b);
-      if(dN>0){ chg = `<span class="chg-dn">18h -${dN}</span>`; changes.lost.push(`${s.name}: ${p.strokes.f} / ${p.strokes.b} → ${s.strokes.f} / ${s.strokes.b}`); }
-      else if(dN<0){ chg = `<span class="chg-up">18h +${-dN}</span>`; changes.gained.push(`${s.name}: ${p.strokes.f} / ${p.strokes.b} → ${s.strokes.f} / ${s.strokes.b}`); }
-      else if(p.strokes.f!==s.strokes.f){ const d9 = s.strokes.f>p.strokes.f ? "9h shift" : "9h shift"; chg = `<span class="chg-none">${d9}</span>`; changes.same.push(s.name); }
-      else changes.same.push(s.name);
-    }
+    if(dN!=null && dN>0) chg = `<span class="chg-dn">18h -${dN}</span>`;
+    else if(dN!=null && dN<0) chg = `<span class="chg-up">18h +${-dN}</span>`;
     html += `<tr><td><span class="rank">${i+1}</span></td><td class="pl">${s.name}</td>
       <td><b>${s.strokes.f} / ${s.strokes.b}</b></td><td class="avg">${fmt2(s.avg)}</td>
       <td>${s.n}</td><td>${chg}</td><td><span class="badge ${hCls}">${hName}</span></td></tr>`;
@@ -393,6 +450,11 @@ document.querySelectorAll("#r-harder .chip").forEach(b=>b.onclick=()=>{
   renderGrid();
 });
 function renderRound(){
+  const adm = isAdmin();
+  document.getElementById("r-lockbox").style.display = adm? "none":"block";
+  document.getElementById("r-formbox").style.display = adm? "block":"none";
+  document.getElementById("r-calc").parentElement.style.display = adm? "flex":"none";
+  if(!adm){ document.getElementById("r-scores-box").style.display="none"; return; }
   const el = document.getElementById("r-date");
   if(!el.value) el.value = new Date().toISOString().slice(0,10);
   const stats = {}; state.players.forEach(p=>stats[p]=playerStats(p,state.rounds));
@@ -485,18 +547,19 @@ function showResults(meta, preRounds, savable){
   </table></div>
   <h2 class="sec">The Word</h2>
   <div class="funny">${funnySummary(res)}</div>`;
-  if(savable){
-    // preview of post-round stroke changes
-    const after = state.rounds.concat([{date:meta.date, scores:Object.fromEntries(meta.entries.map(e=>[e.name,{f:e.f,b:e.b}]))}]);
-    h += `<h2 class="sec">Strokes For Next Game</h2><div class="tblwrap"><table><tr><th style="text-align:left">Player</th><th>Rnds</th><th>New Avg</th><th>New Str</th><th>Was</th><th>Move</th></tr>`;
-    meta.entries.forEach(e=>{
-      const was = playerStats(e.name, state.rounds), now = playerStats(e.name, after);
-      const mv = (was.strokes&&now.strokes)? (now.strokes.total-was.strokes.total) : 0;
-      h += `<tr><td class="pl">${e.name}</td><td>${now.n}</td><td class="avg">${fmt2(now.avg)}</td><td><b>${now.strokes.f} / ${now.strokes.b}</b></td><td>${was.strokes? was.strokes.f+" / "+was.strokes.b:"—"}</td>
-        <td>${mv<0?`<span class="chg-dn">▼ ${mv}</span>`:mv>0?`<span class="chg-up">▲ +${mv}</span>`:`<span class="chg-none">—</span>`}</td></tr>`;
-    });
-    h += `</table></div>`;
-  }
+  // post-round stroke changes (shared by the table below and the shareable image)
+  const after = preRounds.concat([{date:meta.date, scores:Object.fromEntries(meta.entries.map(e=>[e.name,{f:e.f,b:e.b}]))}]);
+  meta._next = meta.entries.map(e=>{
+    const was = playerStats(e.name, preRounds), now = playerStats(e.name, after);
+    return { name:e.name, n:now.n, avg:now.avg, ns:now.strokes, ws:was.strokes,
+             mv:(was.strokes&&now.strokes)? (now.strokes.total-was.strokes.total) : 0 };
+  });
+  h += `<h2 class="sec">Strokes For Next Game</h2><div class="tblwrap"><table><tr><th style="text-align:left">Player</th><th>Rnds</th><th>New Avg</th><th>New Str</th><th>Was</th><th>Move</th></tr>`;
+  meta._next.forEach(x=>{
+    h += `<tr><td class="pl">${x.name}</td><td>${x.n}</td><td class="avg">${fmt2(x.avg)}</td><td><b>${x.ns.f} / ${x.ns.b}</b></td><td>${x.ws? x.ws.f+" / "+x.ws.b:"—"}</td>
+      <td>${x.mv<0?`<span class="chg-dn">▼ ${x.mv}</span>`:x.mv>0?`<span class="chg-up">▲ +${x.mv}</span>`:`<span class="chg-none">—</span>`}</td></tr>`;
+  });
+  h += `</table></div>`;
   document.getElementById("res-body").innerHTML = h;
   document.getElementById("res-savebar").style.display = savable? "flex":"none";
   document.getElementById("res-backbar").style.display = savable? "none":"flex";
@@ -548,6 +611,308 @@ function whatsappCard(res, meta){
   return L.join("\n");
 }
 
+/* ================= SHAREABLE RESULTS IMAGE ================= */
+function makeRoundImage(res, meta){
+  const W=1080, P=40, IW=W-2*P;
+  const cv = document.createElement("canvas");
+  let ctx = cv.getContext("2d");
+  const GOLD="#C9A84C", CREAM="#F0EAD8", BG="#0A1A0D", THEAD="#1A3A20", RA="#0D1F10", RB="#132B17", MUT="#8FA391", GRN="#7FD98A", RED="#E05C4B", AMB="#E8A83C";
+  // winner maps per section
+  const wF={},wB={},wT={};
+  const f1=res.front.filter(r=>r.rank===1); f1.forEach(r=>wF[r.name]=res.potF/f1.length);
+  const b1=res.back.filter(r=>r.rank===1); b1.forEach(r=>wB[r.name]=res.potB/b1.length);
+  const t1=res.tot.filter(r=>r.rank===1);
+  if(t1.length>1){ t1.forEach(r=>wT[r.name]=(res.pot1+res.pot2)/t1.length); }
+  else { wT[t1[0].name]=res.pot1; res.tot.filter(r=>r.rank===2).forEach((r,_,a)=>wT[r.name]=res.pot2/a.length); }
+  // funny text wrap measurement
+  const funnyEl = document.querySelector("#res-body .funny");
+  const funny = funnyEl? funnyEl.textContent : "";
+  ctx.font = "italic 26px Georgia";
+  const funnyLines = wrap(ctx, funny, IW-40);
+  // height budget
+  const secH = rows => 56+46+rows*42+20;
+  let H = 210 + 100;
+  H += secH(res.front.length) + secH(res.back.length) + secH(res.tot.length);
+  if(res.tieNote) H += 44;
+  H += secH(res.rows.length);
+  H += 40 + funnyLines.length*34 + 30;
+  H += secH(meta._next.length);
+  H += 70;
+  cv.width=W; cv.height=H;
+  ctx = cv.getContext("2d");
+  ctx.fillStyle=BG; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=GOLD; ctx.lineWidth=4; ctx.strokeRect(10,10,W-20,H-20);
+  let y=60;
+  // header
+  ctx.textAlign="center"; ctx.fillStyle=GOLD;
+  ctx.font="bold 58px Georgia"; ctx.fillText("TOMODACHI", W/2, y); y+=48;
+  ctx.font="bold 30px Georgia"; ctx.fillText("ROUND RESULTS", W/2, y); y+=42;
+  ctx.fillStyle=CREAM; ctx.font="italic 26px Georgia";
+  ctx.fillText(usDate(meta.date)+(meta.course? "  ·  "+meta.course:""), W/2, y); y+=34;
+  ctx.fillStyle=MUT; ctx.font="22px Arial";
+  ctx.fillText(`Harder 9: ${res.harder==="back"?"Back":"Front"}  ·  Pot ${money(res.pot)} (${res.n} × ${money(res.bet)})`, W/2, y); y+=26;
+  // pot bar
+  const cells=[["FRONT 25%",money(res.potF)],["BACK 25%",money(res.potB)],["1ST 35%",money(res.pot1)],["2ND 15%",money(res.pot2)]];
+  const cw=(IW-30)/4;
+  cells.forEach((c,i)=>{
+    const x=P+i*(cw+10);
+    ctx.fillStyle=THEAD; ctx.fillRect(x,y,cw,66);
+    ctx.strokeStyle=GOLD; ctx.lineWidth=1.5; ctx.strokeRect(x,y,cw,66);
+    ctx.fillStyle=GOLD; ctx.font="bold 18px Arial"; ctx.fillText(c[0], x+cw/2, y+26);
+    ctx.fillStyle=CREAM; ctx.font="bold 26px Arial"; ctx.fillText(c[1], x+cw/2, y+54);
+  });
+  y+=100;
+  const tbl=(title, headers, widths, rows)=>{
+    ctx.fillStyle=GOLD; ctx.font="bold 30px Georgia"; ctx.textAlign="center";
+    ctx.fillText(title, W/2, y+36); y+=56;
+    // header row
+    ctx.fillStyle=THEAD; ctx.fillRect(P,y,IW,46);
+    ctx.fillStyle=GOLD; ctx.font="bold 20px Arial";
+    let x=P;
+    headers.forEach((hd,i)=>{ ctx.textAlign = i===1? "left":"center";
+      ctx.fillText(hd, i===1? x+14 : x+widths[i]/2, y+31); x+=widths[i]; });
+    y+=46;
+    rows.forEach((r,ri)=>{
+      ctx.fillStyle = ri%2? RB:RA; ctx.fillRect(P,y,IW,42);
+      let cx=P;
+      r.forEach((cell,i)=>{
+        ctx.fillStyle = cell.c||CREAM; ctx.font = (cell.b? "bold ":"")+"22px Arial";
+        ctx.textAlign = i===1? "left":"center";
+        ctx.fillText(String(cell.t), i===1? cx+14 : cx+widths[i]/2, y+29);
+        cx+=widths[i];
+      });
+      y+=42;
+    });
+    y+=20;
+  };
+  const T=(t,o={})=>({t,...o});
+  const w6=[90,330,140,140,140,160];
+  tbl("FRONT 9  ·  "+money(res.potF), ["RK","PLAYER","GROSS","STR","NET","PAYOUT"], w6,
+    res.front.map(r=>[T((r.tied?"T":"")+r.rank), T(r.name,{b:1}), T(r.gf), T(r.relF), T(r.nf,{b:1,c:GOLD}), T(wF[r.name]?money(wF[r.name]):"$0",{c:wF[r.name]?GRN:MUT,b:1})]));
+  tbl("BACK 9  ·  "+money(res.potB), ["RK","PLAYER","GROSS","STR","NET","PAYOUT"], w6,
+    res.back.map(r=>[T((r.tied?"T":"")+r.rank), T(r.name,{b:1}), T(r.gb), T(r.relB), T(r.nb,{b:1,c:GOLD}), T(wB[r.name]?money(wB[r.name]):"$0",{c:wB[r.name]?GRN:MUT,b:1})]));
+  tbl("TOTAL NET  ·  "+money(res.pot1)+" / "+money(res.pot2), ["RK","PLAYER","GROSS","STR","NET","PAYOUT"], w6,
+    res.tot.map(r=>[T((r.tied?"T":"")+r.rank), T(r.name,{b:1}), T(r.gt), T(r.relF+"/"+r.relB), T(r.nt,{b:1,c:GOLD}), T(wT[r.name]?money(wT[r.name]):"$0",{c:wT[r.name]?GRN:MUT,b:1})]));
+  if(res.tieNote){
+    ctx.fillStyle=AMB; ctx.font="italic 21px Arial"; ctx.textAlign="center";
+    ctx.fillText(res.tieNote.replace(/&divide;/g,"÷"), W/2, y); y+=44;
+  }
+  tbl("FINAL SUMMARY", ["PLAYER","F","B","TOT","STR","NET","WON","+/−"], [240,90,90,110,130,110,130,100],
+    res.rows.slice().sort((a,b)=>res.pay[b.name]-res.pay[a.name]).map(r=>{
+      const wn=res.pay[r.name], net=wn-res.bet;
+      return [T(r.name,{b:1}), T(r.gf), T(r.gb), T(r.gt), T(r.relF+"/"+r.relB), T(r.nt,{b:1,c:GOLD}),
+        T(wn?money(wn):"$0",{c:wn?GRN:MUT,b:1}), T((net>=0?"+":"−")+money(Math.abs(net)).slice(1),{c:net>0?GRN:net<0?RED:MUT})];
+    }));
+  // funny
+  ctx.fillStyle=CREAM; ctx.font="italic 26px Georgia"; ctx.textAlign="center";
+  funnyLines.forEach(l=>{ ctx.fillText(l, W/2, y+26); y+=34; });
+  y+=30;
+  tbl("STROKES FOR NEXT GAME", ["PLAYER","RNDS","NEW AVG","NEW STR","WAS","MOVE"], [280,120,180,180,140,100],
+    meta._next.map(x=>[T(x.name,{b:1}), T(x.n), T(fmt2(x.avg),{c:GOLD,b:1}), T(x.ns.f+" / "+x.ns.b,{b:1}), T(x.ws? x.ws.f+" / "+x.ws.b:"—"),
+      T(x.mv<0?"▼ "+x.mv : x.mv>0?"▲ +"+x.mv:"—",{c:x.mv<0?RED:x.mv>0?AMB:MUT,b:1})]));
+  ctx.fillStyle=MUT; ctx.font="20px Arial"; ctx.textAlign="center";
+  ctx.fillText("Tomodachi Golf Group · Strokes = 18h / 9h vs Par 72", W/2, H-38);
+  return cv;
+}
+function wrap(ctx, text, maxW){
+  const words = text.split(/\s+/), lines=[]; let line="";
+  for(const w of words){
+    const t = line? line+" "+w : w;
+    if(ctx.measureText(t).width > maxW && line){ lines.push(line); line=w; } else line=t;
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+
+/* ================= SHAREABLE GAME-DAY CARD IMAGE ================= */
+function makeCardImage(){
+  const D = cardData();
+  const W=1080, P=40, IW=W-2*P;
+  const GOLD="#C9A84C", CREAM="#F0EAD8", BG="#0A1A0D", HDR="#102918", THEAD="#1A3A20", RA="#0D1F10", RB="#132B17", MUT="#8FA391", RED="#E05C4B", AMB="#E8A83C", GRNB="#2E6B3A";
+  const cv = document.createElement("canvas");
+  let ctx = cv.getContext("2d");
+  ctx.font="22px Arial";
+  const sameLines = wrap(ctx, D.changes.same.join(", ")||"—", IW-260);
+  // height budget
+  let H = 240 + 110;                                  // header + stats
+  H += 50 + D.elig.length*50 + 24;                    // standings table
+  H += 70;                                            // changes title
+  if(D.changes.gained.length) H += 42 + D.changes.gained.length*32 + 10;
+  if(D.changes.lost.length)   H += 42 + D.changes.lost.length*32 + 10;
+  H += 20 + sameLines.length*30 + 20;                 // no-change block
+  H += 70;                                            // footer
+  cv.width=W; cv.height=H;
+  ctx = cv.getContext("2d");
+  ctx.fillStyle=BG; ctx.fillRect(0,0,W,H);
+  // header block
+  ctx.fillStyle=HDR; ctx.fillRect(14,14,W-28,196);
+  ctx.strokeStyle=GOLD; ctx.lineWidth=4; ctx.strokeRect(10,10,W-20,H-20);
+  // gold corner accents (L-shapes)
+  ctx.lineWidth=3; ctx.beginPath();
+  ctx.moveTo(30,66); ctx.lineTo(30,30); ctx.lineTo(66,30);
+  ctx.moveTo(W-30,66); ctx.lineTo(W-30,30); ctx.lineTo(W-66,30);
+  ctx.stroke();
+  let y=88;
+  ctx.textAlign="center";
+  ctx.fillStyle=GOLD; ctx.font="bold 62px Georgia"; ctx.fillText("TOMODACHI", W/2, y); y+=52;
+  ctx.font="bold 34px Georgia"; ctx.fillText("GAME-DAY CARD", W/2, y); y+=40;
+  ctx.fillStyle=CREAM; ctx.font="italic 24px Georgia";
+  ctx.fillText("Rolling 10 Avg + Strokes vs PAR 72 (10+ rounds only)", W/2, y); y+=34;
+  ctx.fillStyle=MUT; ctx.font="22px Arial";
+  ctx.fillText("Data through: "+(D.lastDate? usDate(D.lastDate):"—"), W/2, y);
+  y=250;
+  // stats bar (cream cells, dark text)
+  const stats=[["ELIGIBLE", D.elig.length+"", "members"],
+               ["LOWEST AVG", D.lo?fmt2(D.lo.avg):"—", D.lo?D.lo.name:""],
+               ["GROUP AVG", fmt2(D.gavg), "all 18"],
+               ["HIGHEST AVG", D.hi?fmt2(D.hi.avg):"—", D.hi?D.hi.name:""]];
+  const cw=(IW-30)/4;
+  stats.forEach((c,i)=>{
+    const x=P+i*(cw+10);
+    ctx.fillStyle="#F7F3E8"; ctx.fillRect(x,y,cw,84);
+    ctx.strokeStyle=GOLD; ctx.lineWidth=2; ctx.strokeRect(x,y,cw,84);
+    ctx.fillStyle="#5A6B5C"; ctx.font="bold 17px Arial"; ctx.fillText(c[0], x+cw/2, y+26);
+    ctx.fillStyle="#12271A"; ctx.font="bold 30px Georgia"; ctx.fillText(c[1], x+cw/2, y+58);
+    ctx.fillStyle="#5A6B5C"; ctx.font="18px Arial"; ctx.fillText(c[2], x+cw/2, y+78);
+  });
+  y+=110;
+  // standings table
+  const widths=[70,270,160,150,100,120,130];
+  const heads=["#","PLAYER","STROKES","10-AVG","RNDS","CHG","HEDGE"];
+  ctx.fillStyle=THEAD; ctx.fillRect(P,y,IW,50);
+  ctx.fillStyle=GOLD; ctx.font="bold 21px Arial";
+  { let x=P; heads.forEach((hd,i)=>{ ctx.textAlign = i===1? "left":"center";
+      ctx.fillText(hd, i===1? x+16 : x+widths[i]/2, y+33); x+=widths[i]; }); }
+  y+=50;
+  D.elig.forEach((s,ri)=>{
+    ctx.fillStyle = ri%2? RB:RA; ctx.fillRect(P,y,IW,50);
+    let x=P;
+    // rank circle
+    ctx.fillStyle=GRNB; ctx.beginPath(); ctx.arc(x+widths[0]/2, y+25, 17, 0, 7); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.font="bold 20px Arial"; ctx.textAlign="center"; ctx.fillText(ri+1+"", x+widths[0]/2, y+32);
+    x+=widths[0];
+    ctx.fillStyle=CREAM; ctx.font="bold 25px Georgia"; ctx.textAlign="left"; ctx.fillText(s.name, x+16, y+33); x+=widths[1];
+    ctx.textAlign="center"; ctx.font="bold 24px Arial"; ctx.fillText(s.strokes.f+" / "+s.strokes.b, x+widths[2]/2, y+33); x+=widths[2];
+    ctx.fillStyle=GOLD; ctx.font="bold 24px Georgia"; ctx.fillText(fmt2(s.avg), x+widths[3]/2, y+33); x+=widths[3];
+    ctx.fillStyle=CREAM; ctx.font="22px Arial"; ctx.fillText(s.n+"", x+widths[4]/2, y+32); x+=widths[4];
+    const dN=D.chg[s.name];
+    if(dN!=null && dN>0){ ctx.fillStyle=RED; ctx.font="bold 20px Arial"; ctx.fillText("18h -"+dN, x+widths[5]/2, y+32); }
+    else if(dN!=null && dN<0){ ctx.fillStyle=AMB; ctx.font="bold 20px Arial"; ctx.fillText("18h +"+(-dN), x+widths[5]/2, y+32); }
+    else { ctx.fillStyle=MUT; ctx.fillText("—", x+widths[5]/2, y+32); }
+    x+=widths[5];
+    // hedge pill
+    const [hName] = hedge(s.avg);
+    const pw=104, ph=32, px=x+(widths[6]-pw)/2, py=y+9;
+    ctx.fillStyle = hName==="GOLD"? GOLD : hName==="SILVER"? "#8A8A8A" : "#7A4A1A";
+    if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(px,py,pw,ph,16); ctx.fill(); } else ctx.fillRect(px,py,pw,ph);
+    ctx.fillStyle = hName==="GOLD"? "#1A1503" : hName==="SILVER"? "#fff" : "#FFD0A0";
+    ctx.font="bold 17px Arial"; ctx.fillText(hName, px+pw/2, py+22);
+    y+=50;
+  });
+  y+=24;
+  // stroke allocation changes
+  ctx.fillStyle=GOLD; ctx.font="bold 30px Georgia"; ctx.textAlign="center";
+  ctx.fillText("STROKE ALLOCATION CHANGES"+(D.priorDate? " vs "+usDate(D.priorDate):""), W/2, y+36); y+=70;
+  const list=(label,color,items)=>{
+    if(!items.length) return;
+    ctx.fillStyle=color; ctx.font="bold 24px Arial"; ctx.textAlign="center";
+    ctx.fillText(label, W/2, y+26); y+=42;
+    ctx.fillStyle=CREAM; ctx.font="22px Arial";
+    items.forEach(t=>{ ctx.fillText(t, W/2, y+22); y+=32; });
+    y+=10;
+  };
+  list("▲ GAINED STROKES", AMB, D.changes.gained);
+  list("▼ LOST STROKES", RED, D.changes.lost);
+  y+=20;
+  ctx.fillStyle=MUT; ctx.font="bold 22px Arial"; ctx.textAlign="center";
+  sameLines.forEach((l,i)=>{ ctx.fillText((i===0?"No change:  ":"")+l, W/2, y+22); y+=30; });
+  // footer
+  ctx.fillStyle=MUT; ctx.font="20px Arial";
+  ctx.fillText("Tomodachi Golf Group · Official workbook values · Strokes = 18h / 9h vs Par 72", W/2, H-38);
+  return cv;
+}
+
+/* ================= EXCEL EXPORT (R5-format .xlsx, live formulas) ================= */
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=(c&1)?0xEDB88320^(c>>>1):c>>>1;t[i]=c;}return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_T[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){
+  const enc=new TextEncoder(), parts=[], central=[]; let off=0;
+  for(const f of files){
+    const nb=enc.encode(f.name), data=enc.encode(f.xml), crc=crc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(8,0,true);
+    lh.setUint16(10,0,true); lh.setUint16(12,0x21,true);
+    lh.setUint32(14,crc,true); lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true);
+    lh.setUint16(26,nb.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),nb,data);
+    central.push({nb,crc,size:data.length,off});
+    off+=30+nb.length+data.length;
+  }
+  const cd=[]; let cdSize=0;
+  for(const c of central){
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true);
+    ch.setUint16(12,0,true); ch.setUint16(14,0x21,true);
+    ch.setUint32(16,c.crc,true); ch.setUint32(20,c.size,true); ch.setUint32(24,c.size,true);
+    ch.setUint16(28,c.nb.length,true); ch.setUint32(42,c.off,true);
+    cd.push(new Uint8Array(ch.buffer),c.nb); cdSize+=46+c.nb.length;
+  }
+  const eo=new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true); eo.setUint16(8,central.length,true); eo.setUint16(10,central.length,true);
+  eo.setUint32(12,cdSize,true); eo.setUint32(16,off,true);
+  return new Blob([...parts,...cd,new Uint8Array(eo.buffer)],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+function colName(n){let s="";while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-m-1)/26;}return s;}
+function xesc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function dateSerial(iso){const [y,m,d]=iso.split("-").map(Number);return Math.round((Date.UTC(y,m-1,d)-Date.UTC(1899,11,30))/86400000);}
+function buildXlsx(){
+  const players=state.players, LASTROW=1094;
+  const cs=(ref,v)=>`<c r="${ref}" t="inlineStr"><is><t>${xesc(v)}</t></is></c>`;
+  const cn=(ref,v)=>`<c r="${ref}"><v>${v}</v></c>`;
+  const cd=(ref,v)=>`<c r="${ref}" s="1"><v>${v}</v></c>`;
+  const cf=(ref,f)=>`<c r="${ref}"><f>${xesc(f)}</f></c>`;
+  const ca=(ref,f)=>`<c r="${ref}"><f t="array" ref="${ref}">${xesc(f)}</f></c>`;
+  const rowsXml=[];
+  // rows 2-4: labels + formulas per player column
+  let r2=cs("B2","Yearly Average"), r3=cs("B3","10 Round Rolling Average"), r4=cs("B4","Strokes Based on PAR 72");
+  players.forEach((p,i)=>{
+    const L=colName(3+i);
+    r2+=cf(L+"2",`IFERROR(AVERAGE(${L}6:${L}${LASTROW}),"Add")`);
+    r3+=ca(L+"3",`IF(COUNT(${L}$6:${L}$${LASTROW})<10,AVERAGE(IF(${L}$6:${L}$${LASTROW}<>"",${L}$6:${L}$${LASTROW})),(SUM( IF( ISNUMBER( MATCH( $B$6:$B$${LASTROW},LARGE( IF(${L}$6:${L}$${LASTROW}<>"",$B$6:$B$${LASTROW}),ROW(INDIRECT("1:10")) ),0 ) ),${L}$6:${L}$${LASTROW} ) )- MAX( IF( ISNUMBER( MATCH( $B$6:$B$${LASTROW},LARGE( IF(${L}$6:${L}$${LASTROW}<>"",$B$6:$B$${LASTROW}),ROW(INDIRECT("1:10")) ),0 ) ),${L}$6:${L}$${LASTROW} ) )) / 9)`);
+    r4+=cf(L+"4",`IFERROR(IF(ISEVEN(ROUND(${L}3-72,0)),ROUND(((${L}3-72)/2),0) & " / " & ROUND(((${L}3-72)/2),0),ROUNDUP(((${L}3-72)/2),0) & " / " & ROUNDDOWN(((${L}3-72)/2),0)),"Below")`);
+  });
+  rowsXml.push(`<row r="2">${r2}</row>`,`<row r="3">${r3}</row>`,`<row r="4">${r4}</row>`);
+  // row 5 headers
+  let r5=cs("B5","Date"); players.forEach((p,i)=>{ r5+=cs(colName(3+i)+"5",p); });
+  rowsXml.push(`<row r="5">${r5}</row>`);
+  // data rows
+  state.rounds.forEach((rd,ri)=>{
+    const rr=6+ri; let x=cd("B"+rr,dateSerial(rd.date));
+    players.forEach((p,i)=>{ const sc=rd.scores[p]; if(sc!=null) x+=cn(colName(3+i)+rr,totalOf(sc)); });
+    rowsXml.push(`<row r="${rr}">${x}</row>`);
+  });
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="2" max="2" width="14" customWidth="1"/></cols><sheetData>${rowsXml.join("")}</sheetData></worksheet>`;
+  const wb=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets><calcPr fullCalcOnLoad="1"/></workbook>`;
+  const wbRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs></styleSheet>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`;
+  return zipStore([
+    {name:"[Content_Types].xml",xml:ct},
+    {name:"_rels/.rels",xml:rels},
+    {name:"xl/workbook.xml",xml:wb},
+    {name:"xl/_rels/workbook.xml.rels",xml:wbRels},
+    {name:"xl/styles.xml",xml:styles},
+    {name:"xl/worksheets/sheet1.xml",xml:sheet}
+  ]);
+}
+
 /* ================= HISTORY ================= */
 function renderHistory(){
   const list = document.getElementById("hist-list");
@@ -558,11 +923,12 @@ function renderHistory(){
     return `<div class="hist-item" data-i="${i}">
       <div><div class="d">${usDate(r.date)}${r.course? " · "+r.course:""}</div>
       <div class="m">${names.length} players${hasFB? " · payouts available":" · totals only (Excel import)"}</div></div>
-      <div style="display:flex;gap:6px">${hasFB?`<button class="btn sm ghost" data-view="${i}">View</button>`:""}<button class="btn sm danger" data-del="${i}">✕</button></div>
+      <div style="display:flex;gap:6px">${hasFB?`<button class="btn sm ghost" data-view="${i}">View</button>`:""}${isAdmin()?`<button class="btn sm danger" data-del="${i}">✕</button>`:""}</div>
     </div>`;
   }).join("") || `<div class="note">No rounds yet.</div>`;
   list.querySelectorAll("[data-del]").forEach(b=>b.onclick=(ev)=>{
     ev.stopPropagation();
+    if(!isAdmin()){ toast("Admin only — unlock in the Data tab"); return; }
     const i=+b.dataset.del;
     if(confirm(`Delete round ${usDate(state.rounds[i].date)}? This changes rolling averages.`)){
       state.rounds.splice(i,1); save(); renderAll(); toast("Round deleted");
@@ -578,6 +944,16 @@ function renderHistory(){
 
 /* ================= SETTINGS ================= */
 function renderSettings(){
+  const st = document.getElementById("adm-status");
+  if(!state.adminHash){
+    st.innerHTML = "<b style='color:var(--amber)'>⚠ No admin PIN set — everyone using this app is currently an admin.</b><br>Set a PIN before sharing the app link with the group. Share the PIN only with people you want as admins.";
+  } else {
+    st.innerHTML = isAdmin()
+      ? "<b style='color:#7FD98A'>🔓 This device is unlocked as admin.</b><br>Admins can enter scores, save/delete rounds, add players, and import/reset data."
+      : "<b>🔒 Locked.</b> Viewing the Card and History is open to everyone; entering scores and changing data needs the admin PIN.";
+  }
+  document.getElementById("adm-lock").style.display = isAdmin()&&state.adminHash? "flex":"none";
+  document.getElementById("adm-unlock").style.display = isAdmin()? "none":"flex";
   document.getElementById("s-info").textContent =
     `${state.players.length} players · ${state.rounds.length} rounds · seeded from Tomodachi Average Scores R5.xlsx (through ${state.rounds.length? usDate(state.rounds[state.rounds.length-1].date):"—"}) · data stored on this device`;
 }
@@ -609,15 +985,54 @@ document.getElementById("r-calc").onclick = ()=>{
 };
 document.getElementById("res-save").onclick = ()=>{
   if(!pendingRound) return;
+  if(!isAdmin()){ toast("Admin only — unlock in the Data tab"); return; }
   const m = pendingRound;
   state.rounds.push({ date:m.date, course:m.course||undefined, bet:m.bet, harder:m.harder,
     scores:Object.fromEntries(m.entries.map(e=>[e.name,{f:e.f,b:e.b}])) });
   state.rounds.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
   save(); pendingRound=null; selected=new Set();
   document.querySelectorAll("#r-grid input").forEach(i=>i.value="");
-  renderAll(); switchView("card"); toast("Round saved — card updated ✅");
+  renderAll();
+  // stay on the results screen so the image/WhatsApp exports are one tap away
+  document.getElementById("res-savebar").style.display="none";
+  document.getElementById("res-backbar").style.display="flex";
+  document.getElementById("res-back").textContent="← Done (view updated Card)";
+  toast("Round saved — card updated ✅ Now share the image!");
 };
-document.getElementById("res-back").onclick = ()=>switchView("history");
+function sharePng(cv, filename, title){
+  cv.toBlob(async blob=>{
+    const file = new File([blob], filename, {type:"image/png"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title}); return; }
+      catch(e){ if(e.name==="AbortError") return; }
+    }
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
+    toast("Image downloaded 🖼");
+  },"image/png");
+}
+document.getElementById("res-img").onclick = ()=>{
+  if(!currentRes) return;
+  sharePng(makeRoundImage(currentRes, currentMeta), `Tomodachi_Results_${currentMeta.date}.png`, "Tomodachi Golf Results");
+};
+document.getElementById("gd-img").onclick = ()=>{
+  const d = cardData().lastDate || new Date().toISOString().slice(0,10);
+  sharePng(makeCardImage(), `Tomodachi_GDC_${d}.png`, "Tomodachi Game-Day Card");
+};
+document.getElementById("res-back").onclick = ()=>{
+  const toCard = document.getElementById("res-back").textContent.includes("Card");
+  document.getElementById("res-back").textContent="← Back to History";
+  switchView(toCard? "card":"history");
+};
+document.getElementById("adm-unlock").onclick = ()=>unlockAdmin();
+document.getElementById("adm-lock").onclick = ()=>lockAdmin();
+document.getElementById("adm-pin").onclick = ()=>changePin();
+document.getElementById("r-unlock").onclick = async ()=>{ if(await unlockAdmin()) renderRound(); };
+document.getElementById("s-xlsx").onclick = ()=>{
+  const blob = buildXlsx();
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=`Tomodachi_Average_Scores_R5_${new Date().toISOString().slice(0,10)}.xlsx`; a.click();
+  toast("Excel exported 📊");
+};
 document.getElementById("res-copy").onclick = async ()=>{
   if(!currentRes) return;
   const txt = whatsappCard(currentRes, currentMeta);
@@ -625,6 +1040,7 @@ document.getElementById("res-copy").onclick = async ()=>{
   catch(e){ prompt("Copy this:", txt); }
 };
 document.getElementById("s-add").onclick = ()=>{
+  if(!isAdmin()){ toast("Admin only — unlock above first"); return; }
   const n = document.getElementById("s-newname").value.trim();
   if(!n) return;
   if(state.players.includes(n)){ toast("Player already exists"); return; }
@@ -636,7 +1052,10 @@ document.getElementById("s-export").onclick = ()=>{
   const a = document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download = `tomodachi-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
 };
-document.getElementById("s-import").onclick = ()=>document.getElementById("s-file").click();
+document.getElementById("s-import").onclick = ()=>{
+  if(!isAdmin()){ toast("Admin only — unlock above first"); return; }
+  document.getElementById("s-file").click();
+};
 document.getElementById("s-file").onchange = (ev)=>{
   const f = ev.target.files[0]; if(!f) return;
   const rd = new FileReader();
@@ -648,8 +1067,11 @@ document.getElementById("s-file").onchange = (ev)=>{
   rd.readAsText(f);
 };
 document.getElementById("s-reset").onclick = ()=>{
+  if(!isAdmin()){ toast("Admin only — unlock above first"); return; }
   if(confirm("Reset ALL data back to the R5 Excel seed? Rounds entered in the app will be lost.")){
-    state = seedState(); save(); renderAll(); toast("Reset to R5 seed");
+    const keepPin = state.adminHash;
+    state = seedState(); state.adminHash = keepPin;
+    save(); renderAll(); toast("Reset to R5 seed");
   }
 };
 
