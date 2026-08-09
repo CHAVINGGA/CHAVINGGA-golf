@@ -96,6 +96,49 @@ details{margin:10px 0}
 summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;padding:6px 0}
 .footer{color:var(--muted);text-align:center;font-size:.68rem;margin:18px 0;font-family:Arial,sans-serif}
 @media(max-width:420px){.statbar{grid-template-columns:repeat(2,1fr)}}
+/* ---- v2 additions ---- */
+nav.tabs button{font-size:.56rem}
+nav.tabs button .ic{font-size:1.15rem}
+.tap{cursor:pointer}
+tr.tap:active td{background:#1B3D23 !important}
+.trend{font-size:.8rem;margin-left:3px;font-weight:700}
+.t-hot{color:#7FD98A}.t-cold{color:var(--amber)}
+.legend{font-size:.68rem;color:var(--muted);text-align:center;font-family:Arial,sans-serif;margin:6px 2px}
+.guest-row{display:grid;grid-template-columns:1fr 96px 40px;gap:6px;align-items:center;margin-top:6px}
+.guest-row .gname{font-weight:700;font-size:.88rem}
+.guest-row .gname span{display:block;font-size:.66rem;color:var(--gold);font-weight:400;font-family:Arial,sans-serif}
+.gtag{display:inline-block;background:#3A2E6B;color:#CFC4FF;font-size:.58rem;padding:1px 6px;border-radius:8px;margin-left:5px;font-family:Arial,sans-serif;vertical-align:middle}
+.editbar{background:#2A2410;border:2px solid var(--amber);border-radius:10px;padding:10px;margin:10px 0;text-align:center}
+.editbar b{color:var(--amber)}
+.prof-head{background:linear-gradient(180deg,#143220,#0F2A18);border:2px solid var(--gold);border-radius:12px;padding:14px;text-align:center;margin-bottom:10px}
+.prof-head .pn{color:var(--gold);font-size:1.5rem;font-weight:700;letter-spacing:1px}
+.prof-head .pa{font-size:2rem;font-weight:700;color:var(--cream);margin:4px 0}
+.prof-head .ps{font-size:.8rem;color:var(--muted);font-family:Arial,sans-serif}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.mini .m{background:var(--card);border:1.5px solid var(--line);border-radius:8px;padding:8px 4px;text-align:center}
+.mini .m .l{font-size:.55rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-family:Arial,sans-serif}
+.mini .m .v{font-size:1.05rem;font-weight:700;color:var(--gold);margin-top:2px}
+.mini .m .v.sm{font-size:.8rem}
+canvas.spark{width:100%;height:130px;display:block;border-radius:8px;background:var(--card);border:1.5px solid var(--line)}
+.updbar{position:fixed;left:0;right:0;bottom:calc(76px + env(safe-area-inset-bottom));background:var(--gold);color:#161203;padding:10px 14px;display:none;align-items:center;justify-content:space-between;gap:10px;z-index:70;font-family:Arial,sans-serif;font-size:.8rem;font-weight:700}
+.updbar button{background:#161203;color:var(--gold);border:none;border-radius:8px;padding:7px 14px;font-weight:700;font-size:.8rem;cursor:pointer;font-family:Arial,sans-serif}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.toggle:last-child{border-bottom:none}
+.toggle .tl{font-size:.82rem}
+.toggle .td{font-size:.68rem;color:var(--muted);font-family:Arial,sans-serif;margin-top:2px}
+.sw{position:relative;width:50px;height:28px;flex:0 0 50px;background:#243B29;border-radius:14px;cursor:pointer;transition:background .2s}
+.sw.on{background:var(--gold)}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#F0EAD8;transition:transform .2s}
+.sw.on::after{transform:translateX(22px)}
+.snap{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.78rem;font-family:Arial,sans-serif}
+.snap:last-child{border-bottom:none}
+.money-pos{color:#7FD98A;font-weight:700}.money-neg{color:var(--red);font-weight:700}
+.yrchips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.modepill{display:inline-block;margin-top:3px;padding:2px 8px;border-radius:10px;font-size:.6rem;font-weight:700;font-family:Arial,sans-serif;cursor:pointer;border:1px solid transparent;letter-spacing:.3px}
+.mp-bet{background:#3A2F0C;color:var(--gold);border-color:var(--gold)}
+.mp-track{background:#12304A;color:#8FC7F0;border-color:#3C7FB5}
+.trackrow td{opacity:.92}
+.qual{display:inline-block;background:#12304A;color:#8FC7F0;font-size:.58rem;padding:1px 6px;border-radius:8px;font-family:Arial,sans-serif;margin-left:5px}
 </style>
 </head>
 <body>
@@ -115,6 +158,7 @@ summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;pad
   </div>
   <div class="statbar" id="gd-stats"></div>
   <div class="tblwrap"><table id="gd-table"></table></div>
+  <div class="legend">👤 Tap any player for their profile &nbsp;·&nbsp; <span class="t-hot">↘</span> trending better &nbsp; <span class="t-cold">↗</span> trending worse (last 5 vs their average)</div>
   <h2 class="sec">Stroke Allocation Changes</h2>
   <div class="card-box" id="gd-changes"></div>
   <div class="btnrow"><button class="btn" id="gd-img">🖼 Share Game-Day Card Image</button></div>
@@ -132,9 +176,16 @@ summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;pad
     <div class="note" style="text-align:center">Entering scores and saving rounds requires the admin PIN.<br>Everyone else can browse the Card and History freely.</div>
     <div class="btnrow"><button class="btn" id="r-unlock">🔓 Unlock Admin</button></div>
   </div>
+  <div class="editbar" id="r-editbar" style="display:none">
+    <b id="r-edittext"></b>
+    <div class="btnrow"><button class="btn ghost sm" id="r-canceledit">Cancel edit</button></div>
+  </div>
   <div class="card-box" id="r-formbox">
     <label class="f">Date</label><input type="date" id="r-date">
-    <label class="f">Course</label><input type="text" id="r-course" placeholder="e.g. Country Club of the Pacific">
+    <label class="f">Course</label>
+    <input type="text" id="r-course" list="courselist" autocomplete="off" placeholder="e.g. Mangilao">
+    <datalist id="courselist"></datalist>
+    <div class="note" id="r-coursenote"></div>
     <label class="f">Bet per player ($)</label><input type="number" id="r-bet" value="20" min="1" step="1">
     <label class="f">Which 9 is harder? (bigger stroke split applies there)</label>
     <div class="chips" id="r-harder">
@@ -142,11 +193,25 @@ summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;pad
       <button class="chip" data-h="back">Back 9 harder</button>
     </div>
     <label class="f">Who played? <span id="r-count"></span></label>
+    <div class="btnrow">
+      <button class="btn ghost sm" id="r-samegroup">👥 Same as last round</button>
+      <button class="btn ghost sm" id="r-clearsel">Clear</button>
+    </div>
     <div class="chips" id="r-chips"></div>
+    <div class="btnrow">
+      <button class="btn ghost sm" id="r-addmember">🆕 New member</button>
+      <button class="btn ghost sm" id="r-addguest">➕ Add guest</button>
+    </div>
+    <div class="note">A <b>new member</b> joins the roster permanently and starts banking rounds toward his 10-round qualification. A <b>guest</b> is a one-off — he plays for money today but never enters the averages.</div>
+    <div id="r-guests"></div>
   </div>
   <div class="card-box" id="r-scores-box" style="display:none">
     <h3>Gross Scores</h3>
-    <div class="note">Strokes shown are <b>pre-round</b> (from current rolling averages) — these drive today's betting.</div>
+    <div class="note">Strokes shown are <b>pre-round</b> (from current rolling averages) — these drive today's betting.
+      Tap a player's <b>💰 IN THE GAME</b> / <b>📊 SCORE ONLY</b> badge to switch him.
+      Score-only players still bank the round toward their 10-round qualification, but pay nothing and win nothing today.
+      Anyone under 10 rounds starts as score-only automatically.</div>
+    <div class="note" id="r-mix"></div>
     <div class="score-grid" id="r-grid"></div>
   </div>
   <div class="btnrow"><button class="btn" id="r-calc">💰 Calculate Payouts</button></div>
@@ -174,6 +239,31 @@ summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;pad
   <div id="hist-list"></div>
 </section>
 
+<!-- ============ STATS / MONEY ============ -->
+<section id="view-stats" class="view">
+  <h2 class="sec">Season Money</h2>
+  <div class="yrchips" id="st-years"></div>
+  <div class="statbar" id="st-stats"></div>
+  <div class="tblwrap"><table id="st-table"></table></div>
+  <div class="note" id="st-note"></div>
+  <h2 class="sec">Leaderboards</h2>
+  <div class="card-box" id="st-boards"></div>
+</section>
+
+<!-- ============ PLAYER PROFILE ============ -->
+<section id="view-profile" class="view">
+  <div class="btnrow"><button class="btn ghost sm" id="pf-back">← Back</button></div>
+  <div class="prof-head" id="pf-head"></div>
+  <div class="mini" id="pf-mini"></div>
+  <h2 class="sec">Last 20 Rounds</h2>
+  <canvas class="spark" id="pf-spark" width="700" height="260"></canvas>
+  <div class="legend" id="pf-sparknote"></div>
+  <h2 class="sec">By Course</h2>
+  <div class="tblwrap"><table id="pf-courses"></table></div>
+  <h2 class="sec">Recent Rounds</h2>
+  <div class="tblwrap"><table id="pf-recent"></table></div>
+</section>
+
 <!-- ============ SETTINGS ============ -->
 <section id="view-settings" class="view">
   <h2 class="sec">Roster &amp; Data</h2>
@@ -188,6 +278,22 @@ summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;pad
     <div class="btnrow"><button class="btn ghost" id="adm-pin">Set / Change Admin PIN</button></div>
   </div>
   <div class="card-box">
+    <h3>⚙️ Options</h3>
+    <div class="toggle">
+      <div><div class="tl">Round payouts to whole dollars</div><div class="td">Splits like $16.67 become $17 / $17 / $16. Totals still add up to the pot exactly. Off = exact percentages per the house rules.</div></div>
+      <div class="sw" id="sw-round"></div>
+    </div>
+    <div class="toggle">
+      <div><div class="tl">Auto-download backup after each save</div><div class="td">Drops a backup file to your phone every time you finalize a round. Off = backups are still kept inside the app (below).</div></div>
+      <div class="sw" id="sw-autobk"></div>
+    </div>
+  </div>
+  <div class="card-box">
+    <h3>🛟 Automatic Backups</h3>
+    <div class="note">The last 5 versions of your data, saved automatically before every round save, delete, import, or reset.</div>
+    <div id="s-snaps"></div>
+  </div>
+  <div class="card-box">
     <h3>Data</h3>
     <div class="btnrow"><button class="btn ghost" id="s-xlsx">📊 Export Excel (R5 format)</button></div>
     <div class="btnrow"><button class="btn ghost" id="s-export">⬇ Export Backup (JSON)</button></div>
@@ -200,28 +306,108 @@ summary{color:var(--gold);cursor:pointer;font-size:.85rem;letter-spacing:1px;pad
 
 <nav class="tabs">
   <button data-v="card" class="on"><span class="ic">🏆</span>Card</button>
-  <button data-v="round"><span class="ic">⛳</span>New Round</button>
+  <button data-v="round"><span class="ic">⛳</span>Round</button>
+  <button data-v="stats"><span class="ic">💵</span>Money</button>
   <button data-v="history"><span class="ic">📅</span>History</button>
   <button data-v="settings"><span class="ic">⚙️</span>Data</button>
 </nav>
+<div class="updbar" id="updbar"><span>🔄 A new version of the app is ready.</span><button id="upd-go">Update</button></div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
 /* ================= SEED (from Tomodachi Average Scores R5.xlsx) ================= */
-const SEED = {"players":["Chris","Keith","Herb","Ed","Dias","Ken R","TJ","Cam","Neil","Brandon","Derrick","Scott","Ron B","Kyu","Pete T","Matt Frazier","Ed H.","Peter H.","Harry","Efren","Sean Chu","Song","Bobby S","Uriah","Ken D","Charles","Will","Emming","Stan","Jess Lujan","Ron Choi","Frank Chen","Brian Moyland2","Rob Peredo"],"rounds":[{"date":"2025-01-01","scores":{"Herb":84,"Ed":87,"Dias":94,"Song":95}},{"date":"2025-01-03","scores":{"Chris":78,"Keith":93,"Herb":97,"Ed":90,"TJ":81,"Cam":83,"Derrick":99,"Kyu":95}},{"date":"2025-01-05","scores":{"Chris":75,"Keith":100,"Herb":86,"Ed":86,"Dias":93,"Ken R":101,"Cam":91,"Derrick":92}},{"date":"2025-01-10","scores":{"Chris":86,"Keith":97,"Derrick":83}},{"date":"2025-01-12","scores":{"Chris":79,"Keith":91,"Ed":89,"Dias":90,"Cam":98,"Derrick":93}},{"date":"2025-01-14","scores":{"Chris":90,"Ken R":78,"TJ":83,"Cam":88,"Ron B":98}},{"date":"2025-01-17","scores":{"Chris":89,"Keith":97,"TJ":77,"Derrick":95}},{"date":"2025-01-19","scores":{"Chris":85,"Keith":92,"Ed":84,"Dias":85,"Ken R":89,"Neil":83,"Derrick":81,"Kyu":99,"Harry":103,"Efren":98,"Sean Chu":90,"Uriah":89}},{"date":"2025-01-24","scores":{"Chris":86,"Keith":100,"Derrick":94}},{"date":"2025-01-26","scores":{"Chris":83,"Keith":98,"Herb":89,"Ed":90,"Dias":87,"Neil":106,"Derrick":84}},{"date":"2025-01-31","scores":{"Chris":81,"Keith":91,"Herb":83,"Ed":96,"Dias":90,"Ken R":88,"TJ":79,"Neil":83}},{"date":"1995-02-02","scores":{"Chris":83,"Keith":97,"Ed":82,"Dias":84,"Neil":93,"Derrick":84,"Kyu":113}},{"date":"2025-02-09","scores":{"Chris":89,"Keith":98,"Dias":95,"Derrick":93,"Efren":103}},{"date":"2025-02-14","scores":{"Chris":87,"Keith":100,"Herb":92,"Ken R":81,"Brandon":78,"Sean Chu":103}},{"date":"2025-02-16","scores":{"Chris":89,"Keith":94,"Ed":83,"Derrick":93}},{"date":"2025-02-17","scores":{"Derrick":77}},{"date":"2025-02-19","scores":{"Herb":88,"Ed":92,"Dias":92,"Ken R":96,"Derrick":87,"Peter H.":101,"Harry":116}},{"date":"2025-02-23","scores":{"Keith":94,"Derrick":83}},{"date":"2025-02-28","scores":{"Chris":88,"Keith":99,"Ed":92,"Neil":95}},{"date":"2025-03-02","scores":{"Chris":81,"Keith":97,"Ed":88,"Dias":94,"Cam":99}},{"date":"2025-03-06","scores":{"Derrick":79}},{"date":"2025-03-07","scores":{"Chris":82,"Keith":94,"Ed":87,"TJ":78,"Cam":90}},{"date":"2025-03-09","scores":{"Chris":82,"Keith":91,"Herb":85,"Ed":88,"Dias":93,"Derrick":79,"Kyu":106}},{"date":"2025-03-11","scores":{"Chris":83,"Keith":92,"Ed":97,"Brandon":72}},{"date":"2025-03-16","scores":{"Chris":93,"Herb":94,"Derrick":92,"Song":94}},{"date":"2025-03-17","scores":{"Chris":84,"Herb":94,"Ken R":94,"Song":93}},{"date":"2025-03-23","scores":{"Keith":94,"Ed":81,"Dias":86,"Brandon":78}},{"date":"2025-03-28","scores":{"Chris":79,"Keith":90,"Herb":83,"Ed":88}},{"date":"2025-03-30","scores":{"Chris":82,"Keith":90,"Ed":92,"Dias":91,"Brandon":77,"Derrick":93,"Scott":82}},{"date":"2025-04-04","scores":{"Chris":75,"Keith":91,"Herb":85,"Ed":82,"Dias":90,"Cam":86}},{"date":"2025-04-06","scores":{"Chris":83,"Keith":87,"Herb":89,"Ed":83,"Dias":95,"Ken R":87,"Derrick":93,"Scott":89,"Ron B":96}},{"date":"2025-04-07","scores":{"Derrick":78}},{"date":"2025-04-09","scores":{"Herb":89,"Ed":80,"Ken R":97}},{"date":"2025-04-10","scores":{"Derrick":92}},{"date":"2025-04-11","scores":{"Chris":84,"Keith":99,"Ed":86,"Dias":87,"Cam":83,"Brandon":81}},{"date":"2025-04-13","scores":{"Chris":78,"Keith":97,"Herb":83,"Ed":90,"Dias":96,"Ken R":86,"Cam":90,"Derrick":84,"Scott":83,"Ken D":83}},{"date":"2025-04-18","scores":{"Chris":81,"Keith":94,"Herb":93,"Ed":85,"Dias":95,"Ken R":92,"Derrick":85,"Scott":91}},{"date":"2025-04-20","scores":{"Chris":79,"Keith":95,"Herb":93,"Ed":82,"Dias":94,"Cam":91,"Derrick":84,"Scott":84,"Will":102}},{"date":"2025-04-24","scores":{"Chris":84,"Keith":95,"Ed":91}},{"date":"2025-04-25","scores":{"Chris":81,"Keith":97,"Ed":86}},{"date":"2025-04-26","scores":{"Herb":86,"TJ":77}},{"date":"2025-04-27","scores":{"Chris":89,"Keith":98,"Herb":91,"Ed":92,"Dias":94,"Cam":90,"Derrick":89,"Scott":82,"Kyu":101,"Will":110}},{"date":"2025-05-02","scores":{"Chris":90,"Keith":92,"Herb":93,"Ed":90,"Ken R":97,"Scott":89}},{"date":"2025-05-03","scores":{"Derrick":76}},{"date":"2025-05-04","scores":{"Chris":73,"Keith":96,"Herb":93,"Ed":83,"Dias":84,"Cam":90,"Derrick":96,"Scott":82,"Kyu":112,"Sean Chu":98,"Will":105}},{"date":"2025-05-09","scores":{"Chris":78,"Keith":91,"Herb":85,"Ed":82,"Ken R":90,"TJ":81,"Neil":88,"Brandon":77,"Derrick":95,"Scott":90,"Ron B":97}},{"date":"2025-05-11","scores":{"Chris":80,"Keith":92,"Herb":86,"Ed":95,"Dias":90,"Ken R":97,"Derrick":91,"Scott":87,"Kyu":103}},{"date":"2025-05-16","scores":{"Chris":87,"Keith":104,"Ed":85,"TJ":75,"Derrick":82,"Scott":83}},{"date":"2025-05-18","scores":{"Chris":80,"Keith":115,"Herb":94,"Ed":86,"Dias":95,"Cam":85,"Derrick":89,"Kyu":122,"Will":112}},{"date":"2025-05-22","scores":{"Chris":91,"Keith":97}},{"date":"2025-05-23","scores":{"Chris":78,"Keith":97,"Herb":91,"Ed":84,"Ken R":100,"TJ":74}},{"date":"2025-05-25","scores":{"Chris":75,"Keith":93,"Ed":80,"Dias":83,"Brandon":71,"Derrick":81,"Ron B":96}},{"date":"2025-05-31","scores":{"Ed":101,"Brandon":79,"Derrick":88,"Scott":82}},{"date":"2025-06-01","scores":{"Keith":104,"Herb":89,"Ed":82,"Dias":89,"Derrick":90,"Scott":90}},{"date":"2025-06-08","scores":{"Chris":85,"Ed":80,"Dias":89,"Cam":97,"Derrick":81,"Scott":83,"Kyu":106,"Efren":96,"Will":103}},{"date":"2025-06-11","scores":{"Herb":84}},{"date":"2025-06-13","scores":{"Chris":79,"Keith":91,"Ed":89,"Derrick":83,"Scott":93}},{"date":"2025-06-15","scores":{"Chris":86,"Keith":95,"Herb":86,"Ed":88,"Cam":90,"Brandon":80,"Derrick":93,"Scott":88}},{"date":"2025-06-20","scores":{"Chris":76,"Keith":93,"Herb":89,"Ed":94,"TJ":79,"Scott":87}},{"date":"2025-06-21","scores":{"Chris":83,"Derrick":81,"Efren":97}},{"date":"0825-06-22","scores":{"Chris":88,"Keith":87,"Herb":96,"Ed":84,"Dias":93,"Cam":94,"Brandon":80,"Derrick":83,"Scott":83}},{"date":"2025-06-27","scores":{"Chris":84,"Keith":96,"Herb":89,"Ed":85,"TJ":78,"Neil":91}},{"date":"2025-06-28","scores":{"Chris":81,"Derrick":88,"Scott":81}},{"date":"2025-06-29","scores":{"Chris":80,"Keith":98,"Herb":87,"Ed":87,"Dias":84,"Derrick":85,"Scott":82,"Efren":90,"Ron Choi":95}},{"date":"2025-07-01","scores":{"Chris":92,"Herb":90,"Ed":78,"Ken R":97}},{"date":"2025-07-02","scores":{"Herb":84,"Song":80}},{"date":"2025-07-03","scores":{"Chris":81,"Keith":100,"Ed":83,"TJ":72,"Neil":90,"Derrick":90}},{"date":"2025-07-04","scores":{"Chris":83,"Keith":92,"Ed":86,"Derrick":86,"Scott":86,"Efren":94}},{"date":"2025-07-05","scores":{"Ed":85,"Brandon":76,"Song":87,"Ken D":89}},{"date":"2025-07-06","scores":{"Chris":78,"Keith":91,"Ed":84,"Dias":85,"Neil":83,"Derrick":82,"Scott":75,"Kyu":103,"Efren":89,"Song":78}},{"date":"2025-07-08","scores":{"Neil":88,"Efren":91}},{"date":"2025-07-09","scores":{"Herb":83,"Neil":92,"Song":92}},{"date":"2025-07-10","scores":{"Ed":88,"Scott":87,"Efren":94}},{"date":"2025-07-11","scores":{"Chris":76,"Keith":103,"Herb":88,"Ed":84,"TJ":76,"Scott":96,"Song":89}},{"date":"2025-07-13","scores":{"Chris":76,"Keith":94,"Ed":88,"Derrick":80,"Scott":85,"Efren":90,"Ron Choi":104}},{"date":"2025-07-15","scores":{"Efren":94}},{"date":"2025-07-16","scores":{"Herb":91,"Ed":87,"Song":92}},{"date":"2025-07-17","scores":{"Ed":79,"Song":92}},{"date":"2025-07-18","scores":{"Chris":81,"Herb":96,"Ed":85,"TJ":76,"Derrick":83,"Scott":86,"Efren":100,"Song":87}},{"date":"2025-07-19","scores":{"Chris":83,"Ed":89,"Derrick":83,"Scott":92}},{"date":"2025-07-20","scores":{"Chris":81,"Herb":88,"Ed":83,"Dias":90,"Derrick":86,"Scott":83,"Efren":101,"Song":84}},{"date":"2025-07-23","scores":{"Chris":74,"Ed":88,"Ken R":91,"TJ":80,"Neil":87,"Scott":86,"Ron B":99,"Song":83}},{"date":"2025-07-26","scores":{"Herb":90,"Ken R":91,"Derrick":88,"Song":94}},{"date":"2025-07-27","scores":{"Chris":84,"Keith":93,"Herb":86,"Ed":85,"Dias":92,"Brandon":78,"Derrick":88,"Scott":85,"Efren":97,"Song":93}},{"date":"2025-08-01","scores":{"Chris":79,"Herb":90,"Ed":85,"Ken R":90,"TJ":76,"Derrick":90,"Scott":88,"Song":89}},{"date":"2025-08-03","scores":{"Derrick":82}},{"date":"2025-08-04","scores":{"Chris":79,"Herb":83,"Ed":87,"Dias":90,"Cam":86,"Derrick":90,"Scott":81,"Ron B":98,"Song":86,"Emming":99}},{"date":"2025-08-07","scores":{"Chris":81,"TJ":74}},{"date":"2025-08-09","scores":{"Chris":79,"Ed":82,"TJ":77,"Brandon":70}},{"date":"2025-08-10","scores":{"Chris":88,"Herb":89,"Ed":85,"Dias":92,"Scott":82,"Stan":87}},{"date":"2025-08-11","scores":{"Chris":88,"Herb":89,"Ed":85,"Dias":92,"Scott":82,"Stan":87}},{"date":"2025-08-13","scores":{"Chris":89,"Ken R":100}},{"date":"2025-08-14","scores":{"Chris":85,"Neil":85,"Scott":81,"Efren":97}},{"date":"2025-08-15","scores":{"Chris":84,"Herb":101,"Dias":94,"Ken R":97,"Song":85}},{"date":"2025-08-17","scores":{"Chris":90,"Keith":86,"Herb":89,"Dias":96,"Brandon":77,"Derrick":94,"Scott":78,"Kyu":119,"Song":87}},{"date":"2025-08-18","scores":{"Derrick":95}},{"date":"2025-08-23","scores":{"Herb":88,"Ed":86,"Cam":90,"Derrick":81,"Scott":78}},{"date":"2025-08-24","scores":{"Keith":99,"Herb":84,"Ed":89,"Dias":95,"Cam":85,"Brandon":73,"Derrick":83,"Scott":81,"Efren":95,"Ron Choi":95}},{"date":"2025-08-26","scores":{"Keith":94,"Ed":82,"Scott":76}},{"date":"2025-08-29","scores":{"Chris":79,"Keith":92,"Herb":87,"Ed":85,"Dias":91,"Ken R":94,"TJ":74,"Cam":80,"Brandon":73,"Derrick":93,"Jess Lujan":86}},{"date":"2025-08-30","scores":{"Scott":77}},{"date":"2025-08-31","scores":{"Chris":77,"Keith":95,"Herb":87,"Ed":81,"Dias":93,"Cam":93,"Derrick":85,"Scott":85,"Ron B":100,"Kyu":106,"Ken D":89,"Ron Choi":96}},{"date":"2025-09-01","scores":{"Scott":83}},{"date":"2025-09-02","scores":{"Scott":78}},{"date":"2025-09-03","scores":{"Scott":88}},{"date":"2025-09-05","scores":{"Chris":83,"TJ":80,"Brandon":76,"Derrick":91,"Scott":82}},{"date":"2025-09-07","scores":{"Chris":85,"Keith":94,"Herb":97,"Ed":87,"Dias":101,"Derrick":85,"Scott":86,"Ron B":96,"Sean Chu":100}},{"date":"2025-09-08","scores":{"Scott":91}},{"date":"2025-09-09","scores":{"Scott":92}},{"date":"2025-09-10","scores":{"Herb":78,"Ed":89,"Derrick":91}},{"date":"2025-09-12","scores":{"Chris":83,"Keith":97,"Herb":87,"Ed":83,"Ken R":91,"TJ":79,"Neil":90,"Ron B":95}},{"date":"2025-09-14","scores":{"Chris":85,"Keith":97,"Herb":90,"Ed":88,"Derrick":93,"Scott":82,"Emming":91}},{"date":"2025-09-19","scores":{"Chris":85,"Keith":97,"Herb":87,"Ed":97,"TJ":75,"Derrick":84,"Scott":92,"Ron B":96}},{"date":"2025-09-21","scores":{"Chris":82,"Keith":98,"Herb":92,"Ed":79,"Dias":93,"Derrick":85,"Scott":85}},{"date":"2025-09-24","scores":{"Herb":96,"Ed":83,"Neil":86}},{"date":"2025-09-26","scores":{"Chris":87,"Keith":94,"Ed":81,"TJ":76,"Scott":88}},{"date":"2025-09-28","scores":{"Chris":84,"Keith":94,"Ed":89,"Cam":97,"Derrick":87,"Scott":87}},{"date":"2025-10-01","scores":{"Chris":80,"Herb":87,"Ed":89,"Ken R":88,"Derrick":85,"Scott":85}},{"date":"2025-10-03","scores":{"Chris":84,"Keith":97,"TJ":82,"Ron B":97}},{"date":"2025-10-05","scores":{"Chris":82,"Keith":90,"Ed":87,"Derrick":87,"Scott":84}},{"date":"2025-10-08","scores":{"Chris":85,"Herb":85,"Ed":84,"Ron B":104}},{"date":"2025-10-10","scores":{"Chris":77,"Keith":92,"Herb":85,"Ed":85,"Derrick":79,"Scott":86}},{"date":"2025-10-12","scores":{"Chris":83,"Keith":100,"Ed":85,"Brandon":76,"Derrick":91,"Scott":78}},{"date":"2025-10-16","scores":{"Herb":85,"Ed":86,"Scott":81,"Ron B":103}},{"date":"2025-10-17","scores":{"Chris":78,"Herb":86,"Ed":82,"Ken R":94,"TJ":79,"Scott":83,"Peter H.":101}},{"date":"2025-10-19","scores":{"Chris":77,"Keith":95,"Herb":88,"Dias":87,"Cam":78,"Derrick":84,"Scott":87,"Peter H.":92}},{"date":"2025-10-22","scores":{"Herb":86,"Ed":93,"Ken R":96,"Peter H.":94}},{"date":"2025-10-24","scores":{"Chris":82,"Keith":95,"Herb":88,"Ed":86,"Cam":95,"Scott":86,"Peter H.":90}},{"date":"2025-10-26","scores":{"Chris":82,"Keith":96,"Herb":88,"Ed":85,"Dias":91,"Derrick":90,"Scott":87,"Peter H.":102,"Stan":93}},{"date":"2025-10-28","scores":{"Herb":91,"Ed":87,"Ken R":93,"Brandon":80,"Peter H.":100,"Stan":87}},{"date":"2025-10-31","scores":{"Chris":86,"Keith":100,"Herb":96,"Ed":97,"Ken R":103,"Derrick":82,"Scott":95,"Ron B":110,"Peter H.":103}},{"date":"2025-11-05","scores":{"Derrick":83,"Scott":86,"Peter H.":93}},{"date":"2025-11-08","scores":{"Chris":79,"Ed":91,"Brandon":77,"Derrick":84,"Scott":81,"Peter H.":94,"Stan":84}},{"date":"2025-11-09","scores":{"Chris":88,"Ed":89,"Brandon":75,"Derrick":85,"Scott":105,"Peter H.":93,"Stan":84}},{"date":"2025-11-14","scores":{"Chris":81,"Keith":95,"Ed":97,"Ken R":86,"TJ":82,"Scott":81,"Ken D":91,"Stan":98}},{"date":"2025-11-16","scores":{"Chris":86,"Keith":104,"Ed":94,"Dias":97,"Cam":93,"Derrick":96,"Scott":88,"Stan":85}},{"date":"2025-11-20","scores":{"Herb":94,"Ed":91,"Dias":94,"Ken R":89,"Cam":94,"Scott":87,"Ron B":94,"Sean Chu":92}},{"date":"2025-11-21","scores":{"Chris":88,"Keith":103,"Herb":89,"Ed":88,"TJ":81,"Brandon":82,"Derrick":93,"Scott":92}},{"date":"2025-11-23","scores":{"Chris":88,"Keith":94,"Herb":86,"Ed":88,"Dias":92,"Cam":94,"Derrick":92}},{"date":"2025-11-28","scores":{"Chris":81,"Herb":93,"Ed":89,"Cam":99,"Brandon":78,"Will":107}},{"date":"2025-11-30","scores":{"Chris":80,"Ed":83,"Efren":102}},{"date":"2025-12-03","scores":{"Herb":85,"Ed":90,"Cam":94,"Neil":95}},{"date":"2025-12-05","scores":{"Chris":87,"Keith":95,"Herb":91,"Ed":82,"Dias":98,"Ken R":92,"TJ":84,"Cam":90,"Brandon":76,"Scott":84}},{"date":"2025-12-07","scores":{"Chris":82,"Keith":88,"Herb":85,"Ed":88,"Dias":99,"Cam":91,"Scott":86}},{"date":"2025-12-12","scores":{"Keith":102,"Herb":85,"Ed":84,"Ken R":92,"Cam":93,"Brandon":74,"Scott":92,"Ron B":97}},{"date":"2025-12-14","scores":{"Keith":104,"Herb":95,"Dias":93,"Scott":90}},{"date":"2025-12-17","scores":{"Chris":83,"Herb":88,"Ed":84,"Brandon":74,"Scott":89}},{"date":"2025-12-19","scores":{"Chris":83,"Keith":95,"Herb":88,"Ed":78,"Dias":93,"Ron B":100,"Song":94}},{"date":"2025-12-21","scores":{"Chris":87,"Herb":88,"Ed":86,"Dias":88,"Ken R":102,"Cam":97,"Neil":92,"Derrick":85,"Peter H.":111,"Harry":115,"Efren":104,"Sean Chu":105,"Song":95,"Emming":102}},{"date":"2025-12-24","scores":{"Chris":78,"Ed":86,"Ken R":88,"Song":93}},{"date":"2025-12-26","scores":{"Chris":82,"Herb":95,"Ed":86,"Dias":93,"Song":91}},{"date":"2025-12-28","scores":{"Chris":84,"Herb":92,"Ed":79,"Dias":92,"Ken R":96,"Derrick":83,"Peter H.":98,"Song":92}},{"date":"2025-12-31","scores":{"Ed":85,"Neil":88,"Brandon":73,"Brian Moyland2":84}},{"date":"2026-01-02","scores":{"Chris":79,"Ed":88}},{"date":"2026-01-03","scores":{"Chris":82,"Ed":86,"Derrick":87}},{"date":"2026-01-04","scores":{"Chris":85,"Keith":98,"Ed":87,"Derrick":88}},{"date":"2026-01-07","scores":{"Chris":84,"Herb":86,"Ed":81}},{"date":"2026-01-09","scores":{"Chris":84,"Keith":98,"Herb":87,"Ed":80}},{"date":"2026-01-10","scores":{"Chris":81,"Ed":89,"Derrick":91}},{"date":"2026-01-11","scores":{"Chris":81,"Keith":110,"Dias":96,"Derrick":90,"Scott":87}},{"date":"2026-01-13","scores":{"Chris":81,"Herb":87,"Ed":93,"Brandon":75,"Ron B":90}},{"date":"2026-01-16","scores":{"Chris":80,"Keith":94,"Herb":90,"Ed":89,"Ron B":106,"Rob Peredo":101}},{"date":"2026-01-18","scores":{"Chris":76,"Keith":107,"Ed":81,"Dias":86,"Derrick":91,"Scott":84,"Kyu":109}},{"date":"2026-01-19","scores":{"Chris":78,"Keith":100,"Herb":89}},{"date":"2026-01-23","scores":{"Chris":77,"Keith":95,"Herb":91,"Ed":87,"Ken R":95,"Neil":80,"Brandon":78,"Derrick":90}},{"date":"2026-01-24","scores":{"Chris":81,"Ed":86,"Scott":79}},{"date":"2026-01-25","scores":{"Chris":83,"Keith":100,"Ed":78,"Dias":92,"Scott":80,"Ron B":101}},{"date":"2026-01-30","scores":{"Chris":87,"Keith":105}},{"date":"2026-01-31","scores":{"Ed":85,"Brandon":81,"Scott":83}},{"date":"2026-02-01","scores":{"Herb":89,"Ed":88,"Dias":90,"Derrick":86,"Scott":79,"Kyu":113}},{"date":"2026-02-05","scores":{"Chris":81,"Keith":102}},{"date":"2026-02-06","scores":{"Ed":85,"Brandon":76}},{"date":"2026-02-08","scores":{"Keith":105,"Ed":94,"Derrick":90}},{"date":"2026-02-11","scores":{"Herb":94,"Ed":87,"Ken R":90}},{"date":"2026-02-13","scores":{"Keith":102,"Herb":91,"Ed":84,"Ken R":87,"Neil":87,"Brandon":84,"Ron B":91}},{"date":"2026-02-15","scores":{"Chris":84,"Keith":93,"Herb":90,"Ed":85,"Dias":95,"Derrick":84,"Scott":90,"Stan":97}},{"date":"2026-02-18","scores":{"Chris":80,"Ed":82}},{"date":"2026-02-19","scores":{"Ed":80,"Stan":88}},{"date":"2026-02-20","scores":{"Chris":79,"Keith":95,"Ed":83,"Dias":93,"Ken R":91}},{"date":"2026-02-22","scores":{"Chris":80,"Keith":96,"Ed":81,"Dias":88,"Ken R":86,"Scott":84,"Kyu":109,"Ken D":92}},{"date":"2026-02-26","scores":{"Chris":81,"Herb":85,"Dias":95,"Ken R":100,"Ron B":99}},{"date":"2026-02-27","scores":{"Keith":99,"Brandon":72,"Ken D":89}},{"date":"2026-03-01","scores":{"Chris":84,"Keith":95,"Ed":88,"Dias":95,"Neil":97,"Derrick":90,"Scott":88}},{"date":"2026-03-03","scores":{"Ed":78}},{"date":"2026-03-06","scores":{"Chris":78,"Keith":94,"Neil":93,"Brandon":80}},{"date":"2026-03-08","scores":{"Chris":89,"Keith":96,"Ed":81,"Derrick":84,"Scott":83}},{"date":"2026-03-11","scores":{"Herb":83,"Ed":90}},{"date":"2026-03-15","scores":{"Chris":87,"Herb":88,"Ed":90,"Dias":100,"Scott":83,"Ron Choi":102}},{"date":"2026-03-22","scores":{"Chris":79,"Keith":96,"Herb":93,"Ed":85,"Dias":93,"Cam":93,"Scott":82}},{"date":"2026-03-27","scores":{"Chris":81,"Keith":99,"Ed":85,"Cam":92}},{"date":"2026-03-29","scores":{"Chris":87,"Keith":98,"Herb":89,"Ed":84,"Brandon":77,"Derrick":92,"Scott":80}},{"date":"2026-04-03","scores":{"Chris":90,"Keith":97,"Herb":86,"Ed":83,"Ken R":93,"Cam":89}},{"date":"2026-04-05","scores":{"Chris":82,"Keith":104,"Ed":90,"Ken R":85,"Scott":88,"Ron B":88}},{"date":"2026-04-08","scores":{"Chris":82,"Herb":92,"Dias":93,"Derrick":90}},{"date":"2026-04-10","scores":{"Keith":100,"Herb":92,"Ed":92,"Ken R":86,"TJ":83}},{"date":"2026-04-12","scores":{"Chris":80,"Keith":100,"Herb":79,"Ed":85,"Dias":90,"Ken R":93,"Derrick":86,"Scott":82,"Ron Choi":99}},{"date":"2026-04-18","scores":{"Chris":80,"Herb":88,"Ed":86,"Dias":88,"Ken R":95,"Brandon":77,"Derrick":86,"Scott":91}},{"date":"2026-04-20","scores":{"Chris":89,"Keith":101,"Herb":88,"Ken R":101,"Scott":88,"Song":90}},{"date":"2026-04-21","scores":{"Chris":92,"Keith":105,"Herb":92,"Ken R":90,"Scott":85,"Song":88}},{"date":"2026-04-22","scores":{"Chris":89,"Keith":99,"Scott":81,"Kyu":110}},{"date":"2026-04-23","scores":{"Chris":89,"Keith":101,"Herb":101,"Scott":85}},{"date":"2026-04-24","scores":{"Ed":78,"Brandon":77}},{"date":"2026-04-26","scores":{"Chris":79,"Keith":102,"Ed":84,"Dias":88,"Derrick":85,"Scott":82}},{"date":"2026-05-01","scores":{"Chris":82,"Keith":96,"Herb":86,"Ed":78,"Ken R":94,"TJ":74,"Cam":93,"Brandon":75}},{"date":"2026-05-03","scores":{"Chris":84,"Keith":97,"Dias":93,"Derrick":83,"Scott":87,"Ron B":97}},{"date":"2026-05-06","scores":{"Herb":89,"Ed":85,"Cam":92,"Stan":91}},{"date":"2026-05-08","scores":{"Chris":90,"Herb":91,"Ed":95,"Ken R":103,"Ron B":98}},{"date":"2026-05-13","scores":{"Chris":81,"Herb":88,"Ed":82,"Cam":92}},{"date":"2026-05-15","scores":{"Chris":74,"Keith":93,"Herb":87,"Ed":83,"Ken R":94,"Cam":88,"Ron B":101,"Stan":83}},{"date":"2026-05-17","scores":{"Chris":83,"Keith":94,"Herb":81,"Ed":94,"Dias":91,"Kyu":115,"Emming":99}},{"date":"2026-05-20","scores":{"Herb":94,"Ed":84,"Cam":92,"Brandon":73,"Derrick":89,"Stan":84}},{"date":"2026-05-22","scores":{"Chris":81,"Ed":85,"Ken R":92,"Cam":99}},{"date":"2026-05-24","scores":{"Chris":80,"Herb":93,"Ed":92,"Dias":92,"Derrick":79,"Stan":88}},{"date":"2026-05-29","scores":{"Chris":84,"Herb":89,"Ed":82,"Ron B":99}},{"date":"2026-05-31","scores":{"Chris":80,"Ed":84,"Dias":98,"Cam":92,"Derrick":82,"Scott":78,"Kyu":118}},{"date":"2026-06-05","scores":{"Chris":100,"Herb":83,"Ed":79,"Ken R":95}},{"date":"2026-06-07","scores":{"Chris":85,"Ed":89,"Derrick":88,"Scott":95,"Charles":107}},{"date":"2026-06-12","scores":{"Chris":79,"Herb":84,"TJ":77,"Brandon":78,"Jess Lujan":82}},{"date":"2026-06-14","scores":{"Herb":93,"Ed":83,"Dias":91,"Scott":84}},{"date":"2026-06-20","scores":{"Chris":87,"Scott":90,"Song":92}},{"date":"2026-06-21","scores":{"Chris":91,"Keith":96,"Ed":84,"Dias":95,"Brandon":74,"Scott":89,"Kyu":102,"Harry":112,"Sean Chu":95,"Song":91,"Frank Chen":90}},{"date":"2026-06-26","scores":{"Chris":82,"Keith":97,"Scott":91,"Song":90}},{"date":"2026-06-28","scores":{"Chris":78,"Keith":100,"Ed":81,"Dias":87,"Neil":89,"Scott":80,"Kyu":107,"Matt Frazier":98,"Harry":119,"Sean Chu":87,"Song":91}},{"date":"2026-07-03","scores":{"Chris":82,"TJ":81,"Scott":83,"Song":85}},{"date":"2026-07-11","scores":{"Chris":80,"Ed":89,"Scott":87}},{"date":"2026-07-12","scores":{"Chris":83,"Herb":93,"Ed":90,"Dias":98,"TJ":71,"Cam":92,"Scott":77,"Kyu":105,"Matt Frazier":93,"Bobby S":109}},{"date":"2026-07-17","scores":{"Chris":81,"Keith":105,"Herb":94,"Ed":95,"TJ":74,"Scott":88,"Ron B":92}},{"date":"2026-07-19","scores":{"Chris":85,"Keith":96,"Herb":84,"Ed":82,"Dias":93,"Scott":79,"Kyu":118,"Matt Frazier":95}},{"date":"2026-07-24","scores":{"Chris":92,"TJ":72}},{"date":"2026-07-26","scores":{"Chris":76,"Keith":94,"Herb":89,"Ed":79,"Dias":92,"Ken R":88,"Cam":96,"Neil":85,"Brandon":74,"Scott":80,"Pete T":93,"Ed H.":88,"Sean Chu":99,"Bobby S":119}}]};
+const SEED = {"players":["Chris","Keith","Herb","Ed","Dias","Ken R","TJ","Cam","Neil","Brandon","Derrick","Scott","Ron B","Kyu","Pete T","Matt Frazier","Ed H.","Peter H.","Harry","Efren","Sean Chu","Song","Bobby S","Nick","Ken D","Charles","Will","Emming","Stan","Jess Lujan","Ron Choi","Frank Chen","Brian Moyland2","Rob Peredo","Uriah","Travis","Kevin Lee","Greg Perez","Rich D","Marv"],"rounds":[{"date":"2025-01-01","scores":{"Herb":84,"Ed":87,"Dias":94,"Song":95}},{"date":"2025-01-03","scores":{"Chris":78,"Keith":93,"Herb":97,"Ed":90,"TJ":81,"Cam":83,"Derrick":99,"Kyu":95,"Travis":103}},{"date":"2025-01-05","scores":{"Chris":75,"Keith":100,"Herb":86,"Ed":86,"Dias":93,"Ken R":101,"Cam":91,"Derrick":92}},{"date":"2025-01-10","scores":{"Chris":86,"Keith":97,"Derrick":83}},{"date":"2025-01-12","scores":{"Chris":79,"Keith":91,"Ed":89,"Dias":90,"Cam":98,"Derrick":93}},{"date":"2025-01-14","scores":{"Chris":90,"Ken R":78,"TJ":83,"Cam":88,"Ron B":98}},{"date":"2025-01-17","scores":{"Chris":89,"Keith":97,"TJ":77,"Derrick":95}},{"date":"2025-01-19","scores":{"Chris":85,"Keith":92,"Ed":84,"Dias":85,"Ken R":89,"Neil":83,"Derrick":81,"Kyu":99,"Harry":103,"Efren":98,"Sean Chu":90,"Uriah":89,"Marv":85}},{"date":"2025-01-24","scores":{"Chris":86,"Keith":100,"Derrick":94}},{"date":"2025-01-26","scores":{"Chris":83,"Keith":98,"Herb":89,"Ed":90,"Dias":87,"Neil":106,"Derrick":84}},{"date":"2025-01-31","scores":{"Chris":81,"Keith":91,"Herb":83,"Ed":96,"Dias":90,"Ken R":88,"TJ":79,"Neil":83,"Marv":96}},{"date":"1995-02-02","scores":{"Chris":83,"Keith":97,"Ed":82,"Dias":84,"Neil":93,"Derrick":84,"Kyu":113}},{"date":"2025-02-09","scores":{"Chris":89,"Keith":98,"Dias":95,"Derrick":93,"Efren":103}},{"date":"2025-02-14","scores":{"Chris":87,"Keith":100,"Herb":92,"Ken R":81,"Brandon":78,"Sean Chu":103,"Rich D":92,"Marv":97}},{"date":"2025-02-16","scores":{"Chris":89,"Keith":94,"Ed":83,"Derrick":93}},{"date":"2025-02-17","scores":{"Derrick":77}},{"date":"2025-02-19","scores":{"Herb":88,"Ed":92,"Dias":92,"Ken R":96,"Derrick":87,"Peter H.":101,"Harry":116}},{"date":"2025-02-23","scores":{"Keith":94,"Derrick":83,"Marv":107}},{"date":"2025-02-28","scores":{"Chris":88,"Keith":99,"Ed":92,"Neil":95}},{"date":"2025-03-02","scores":{"Chris":81,"Keith":97,"Ed":88,"Dias":94,"Cam":99,"Travis":96}},{"date":"2025-03-06","scores":{"Derrick":79}},{"date":"2025-03-07","scores":{"Chris":82,"Keith":94,"Ed":87,"TJ":78,"Cam":90,"Rich D":97}},{"date":"2025-03-09","scores":{"Chris":82,"Keith":91,"Herb":85,"Ed":88,"Dias":93,"Derrick":79,"Kyu":106}},{"date":"2025-03-11","scores":{"Chris":83,"Keith":92,"Ed":97,"Brandon":72}},{"date":"2025-03-16","scores":{"Chris":93,"Herb":94,"Derrick":92,"Song":94}},{"date":"2025-03-17","scores":{"Chris":84,"Herb":94,"Ken R":94,"Song":93}},{"date":"2025-03-23","scores":{"Keith":94,"Ed":81,"Dias":86,"Brandon":78}},{"date":"2025-03-28","scores":{"Chris":79,"Keith":90,"Herb":83,"Ed":88}},{"date":"2025-03-30","scores":{"Chris":82,"Keith":90,"Ed":92,"Dias":91,"Brandon":77,"Derrick":93,"Scott":82}},{"date":"2025-04-04","scores":{"Chris":75,"Keith":91,"Herb":85,"Ed":82,"Dias":90,"Cam":86}},{"date":"2025-04-06","scores":{"Chris":83,"Keith":87,"Herb":89,"Ed":83,"Dias":95,"Ken R":87,"Derrick":93,"Scott":89,"Ron B":96}},{"date":"2025-04-07","scores":{"Derrick":78}},{"date":"2025-04-09","scores":{"Herb":89,"Ed":80,"Ken R":97}},{"date":"2025-04-10","scores":{"Derrick":92}},{"date":"2025-04-11","scores":{"Chris":84,"Keith":99,"Ed":86,"Dias":87,"Cam":83,"Brandon":81,"Rich D":99}},{"date":"2025-04-13","scores":{"Chris":78,"Keith":97,"Herb":83,"Ed":90,"Dias":96,"Ken R":86,"Cam":90,"Derrick":84,"Scott":83,"Ken D":83}},{"date":"2025-04-18","scores":{"Chris":81,"Keith":94,"Herb":93,"Ed":85,"Dias":95,"Ken R":92,"Derrick":85,"Scott":91}},{"date":"2025-04-20","scores":{"Chris":79,"Keith":95,"Herb":93,"Ed":82,"Dias":94,"Cam":91,"Derrick":84,"Scott":84,"Will":102}},{"date":"2025-04-24","scores":{"Chris":84,"Keith":95,"Ed":91}},{"date":"2025-04-25","scores":{"Chris":81,"Keith":97,"Ed":86}},{"date":"2025-04-26","scores":{"Herb":86,"TJ":77}},{"date":"2025-04-27","scores":{"Chris":89,"Keith":98,"Herb":91,"Ed":92,"Dias":94,"Cam":90,"Derrick":89,"Scott":82,"Kyu":101,"Will":110}},{"date":"2025-05-02","scores":{"Chris":90,"Keith":92,"Herb":93,"Ed":90,"Ken R":97,"Scott":89,"Travis":99}},{"date":"2025-05-03","scores":{"Derrick":76}},{"date":"2025-05-04","scores":{"Chris":73,"Keith":96,"Herb":93,"Ed":83,"Dias":84,"Cam":90,"Derrick":96,"Scott":82,"Kyu":112,"Sean Chu":98,"Will":105}},{"date":"2025-05-09","scores":{"Chris":78,"Keith":91,"Herb":85,"Ed":82,"Ken R":90,"TJ":81,"Neil":88,"Brandon":77,"Derrick":95,"Scott":90,"Ron B":97}},{"date":"2025-05-11","scores":{"Chris":80,"Keith":92,"Herb":86,"Ed":95,"Dias":90,"Ken R":97,"Derrick":91,"Scott":87,"Kyu":103}},{"date":"2025-05-16","scores":{"Chris":87,"Keith":104,"Ed":85,"TJ":75,"Derrick":82,"Scott":83}},{"date":"2025-05-18","scores":{"Chris":80,"Keith":115,"Herb":94,"Ed":86,"Dias":95,"Cam":85,"Derrick":89,"Kyu":122,"Will":112}},{"date":"2025-05-22","scores":{"Chris":91,"Keith":97}},{"date":"2025-05-23","scores":{"Chris":78,"Keith":97,"Herb":91,"Ed":84,"Ken R":100,"TJ":74}},{"date":"2025-05-25","scores":{"Chris":75,"Keith":93,"Ed":80,"Dias":83,"Brandon":71,"Derrick":81,"Ron B":96}},{"date":"2025-05-31","scores":{"Ed":101,"Brandon":79,"Derrick":88,"Scott":82}},{"date":"2025-06-01","scores":{"Keith":104,"Herb":89,"Ed":82,"Dias":89,"Derrick":90,"Scott":90}},{"date":"2025-06-08","scores":{"Chris":85,"Ed":80,"Dias":89,"Cam":97,"Derrick":81,"Scott":83,"Kyu":106,"Efren":96,"Will":103}},{"date":"2025-06-11","scores":{"Herb":84}},{"date":"2025-06-13","scores":{"Chris":79,"Keith":91,"Ed":89,"Derrick":83,"Scott":93}},{"date":"2025-06-15","scores":{"Chris":86,"Keith":95,"Herb":86,"Ed":88,"Cam":90,"Brandon":80,"Derrick":93,"Scott":88}},{"date":"2025-06-20","scores":{"Chris":76,"Keith":93,"Herb":89,"Ed":94,"TJ":79,"Scott":87}},{"date":"2025-06-21","scores":{"Chris":83,"Derrick":81,"Efren":97}},{"date":"0825-06-22","scores":{"Chris":88,"Keith":87,"Herb":96,"Ed":84,"Dias":93,"Cam":94,"Brandon":80,"Derrick":83,"Scott":83}},{"date":"2025-06-27","scores":{"Chris":84,"Keith":96,"Herb":89,"Ed":85,"TJ":78,"Neil":91}},{"date":"2025-06-28","scores":{"Chris":81,"Derrick":88,"Scott":81}},{"date":"2025-06-29","scores":{"Chris":80,"Keith":98,"Herb":87,"Ed":87,"Dias":84,"Derrick":85,"Scott":82,"Efren":90,"Ron Choi":95}},{"date":"2025-07-01","scores":{"Chris":92,"Herb":90,"Ed":78,"Ken R":97}},{"date":"2025-07-02","scores":{"Herb":84,"Song":80}},{"date":"2025-07-03","scores":{"Chris":81,"Keith":100,"Ed":83,"TJ":72,"Neil":90,"Derrick":90}},{"date":"2025-07-04","scores":{"Chris":83,"Keith":92,"Ed":86,"Derrick":86,"Scott":86,"Efren":94}},{"date":"2025-07-05","scores":{"Ed":85,"Brandon":76,"Song":87,"Ken D":89}},{"date":"2025-07-06","scores":{"Chris":78,"Keith":91,"Ed":84,"Dias":85,"Neil":83,"Derrick":82,"Scott":75,"Kyu":103,"Efren":89,"Song":78}},{"date":"2025-07-08","scores":{"Neil":88,"Efren":91}},{"date":"2025-07-09","scores":{"Herb":83,"Neil":92,"Song":92}},{"date":"2025-07-10","scores":{"Ed":88,"Scott":87,"Efren":94}},{"date":"2025-07-11","scores":{"Chris":76,"Keith":103,"Herb":88,"Ed":84,"TJ":76,"Scott":96,"Song":89}},{"date":"2025-07-13","scores":{"Chris":76,"Keith":94,"Ed":88,"Derrick":80,"Scott":85,"Efren":90,"Ron Choi":104}},{"date":"2025-07-15","scores":{"Efren":94}},{"date":"2025-07-16","scores":{"Herb":91,"Ed":87,"Song":92}},{"date":"2025-07-17","scores":{"Ed":79,"Song":92}},{"date":"2025-07-18","scores":{"Chris":81,"Herb":96,"Ed":85,"TJ":76,"Derrick":83,"Scott":86,"Efren":100,"Song":87}},{"date":"2025-07-19","scores":{"Chris":83,"Ed":89,"Derrick":83,"Scott":92}},{"date":"2025-07-20","scores":{"Chris":81,"Herb":88,"Ed":83,"Dias":90,"Derrick":86,"Scott":83,"Efren":101,"Song":84}},{"date":"2025-07-23","scores":{"Chris":74,"Ed":88,"Ken R":91,"TJ":80,"Neil":87,"Scott":86,"Ron B":99,"Song":83}},{"date":"2025-07-26","scores":{"Herb":90,"Ken R":91,"Derrick":88,"Song":94}},{"date":"2025-07-27","scores":{"Chris":84,"Keith":93,"Herb":86,"Ed":85,"Dias":92,"Brandon":78,"Derrick":88,"Scott":85,"Efren":97,"Song":93}},{"date":"2025-08-01","scores":{"Chris":79,"Herb":90,"Ed":85,"Ken R":90,"TJ":76,"Derrick":90,"Scott":88,"Song":89}},{"date":"2025-08-03","scores":{"Derrick":82}},{"date":"2025-08-04","scores":{"Chris":79,"Herb":83,"Ed":87,"Dias":90,"Cam":86,"Derrick":90,"Scott":81,"Ron B":98,"Song":86,"Emming":99}},{"date":"2025-08-07","scores":{"Chris":81,"TJ":74}},{"date":"2025-08-09","scores":{"Chris":79,"Ed":82,"TJ":77,"Brandon":70}},{"date":"2025-08-10","scores":{"Chris":88,"Herb":89,"Ed":85,"Dias":92,"Scott":82,"Stan":87}},{"date":"2025-08-11","scores":{"Chris":88,"Herb":89,"Ed":85,"Dias":92,"Scott":82,"Stan":87}},{"date":"2025-08-13","scores":{"Chris":89,"Ken R":100}},{"date":"2025-08-14","scores":{"Chris":85,"Neil":85,"Scott":81,"Efren":97}},{"date":"2025-08-15","scores":{"Chris":84,"Herb":101,"Dias":94,"Ken R":97,"Song":85}},{"date":"2025-08-17","scores":{"Chris":90,"Keith":86,"Herb":89,"Dias":96,"Brandon":77,"Derrick":94,"Scott":78,"Kyu":119,"Song":87}},{"date":"2025-08-18","scores":{"Derrick":95}},{"date":"2025-08-23","scores":{"Herb":88,"Ed":86,"Cam":90,"Derrick":81,"Scott":78}},{"date":"2025-08-24","scores":{"Keith":99,"Herb":84,"Ed":89,"Dias":95,"Cam":85,"Brandon":73,"Derrick":83,"Scott":81,"Efren":95,"Ron Choi":95}},{"date":"2025-08-26","scores":{"Keith":94,"Ed":82,"Scott":76}},{"date":"2025-08-29","scores":{"Chris":79,"Keith":92,"Herb":87,"Ed":85,"Dias":91,"Ken R":94,"TJ":74,"Cam":80,"Brandon":73,"Derrick":93,"Jess Lujan":86}},{"date":"2025-08-30","scores":{"Scott":77}},{"date":"2025-08-31","scores":{"Chris":77,"Keith":95,"Herb":87,"Ed":81,"Dias":93,"Cam":93,"Derrick":85,"Scott":85,"Ron B":100,"Kyu":106,"Ken D":89,"Ron Choi":96}},{"date":"2025-09-01","scores":{"Scott":83}},{"date":"2025-09-02","scores":{"Scott":78}},{"date":"2025-09-03","scores":{"Scott":88}},{"date":"2025-09-05","scores":{"Chris":83,"TJ":80,"Brandon":76,"Derrick":91,"Scott":82}},{"date":"2025-09-07","scores":{"Chris":85,"Keith":94,"Herb":97,"Ed":87,"Dias":101,"Derrick":85,"Scott":86,"Ron B":96,"Sean Chu":100}},{"date":"2025-09-08","scores":{"Scott":91}},{"date":"2025-09-09","scores":{"Scott":92}},{"date":"2025-09-10","scores":{"Herb":78,"Ed":89,"Derrick":91}},{"date":"2025-09-12","scores":{"Chris":83,"Keith":97,"Herb":87,"Ed":83,"Ken R":91,"TJ":79,"Neil":90,"Ron B":95,"Marv":111}},{"date":"2025-09-14","scores":{"Chris":85,"Keith":97,"Herb":90,"Ed":88,"Derrick":93,"Scott":82,"Emming":91}},{"date":"2025-09-19","scores":{"Chris":85,"Keith":97,"Herb":87,"Ed":97,"TJ":75,"Derrick":84,"Scott":92,"Ron B":96}},{"date":"2025-09-21","scores":{"Chris":82,"Keith":98,"Herb":92,"Ed":79,"Dias":93,"Derrick":85,"Scott":85}},{"date":"2025-09-24","scores":{"Herb":96,"Ed":83,"Neil":86}},{"date":"2025-09-26","scores":{"Chris":87,"Keith":94,"Ed":81,"TJ":76,"Scott":88}},{"date":"2025-09-28","scores":{"Chris":84,"Keith":94,"Ed":89,"Cam":97,"Derrick":87,"Scott":87}},{"date":"2025-10-01","scores":{"Chris":80,"Herb":87,"Ed":89,"Ken R":88,"Derrick":85,"Scott":85}},{"date":"2025-10-03","scores":{"Chris":84,"Keith":97,"TJ":82,"Ron B":97}},{"date":"2025-10-05","scores":{"Chris":82,"Keith":90,"Ed":87,"Derrick":87,"Scott":84}},{"date":"2025-10-08","scores":{"Chris":85,"Herb":85,"Ed":84,"Ron B":104}},{"date":"2025-10-10","scores":{"Chris":77,"Keith":92,"Herb":85,"Ed":85,"Derrick":79,"Scott":86}},{"date":"2025-10-12","scores":{"Chris":83,"Keith":100,"Ed":85,"Brandon":76,"Derrick":91,"Scott":78}},{"date":"2025-10-16","scores":{"Herb":85,"Ed":86,"Scott":81,"Ron B":103}},{"date":"2025-10-17","scores":{"Chris":78,"Herb":86,"Ed":82,"Ken R":94,"TJ":79,"Scott":83,"Peter H.":101}},{"date":"2025-10-19","scores":{"Chris":77,"Keith":95,"Herb":88,"Dias":87,"Cam":78,"Derrick":84,"Scott":87,"Peter H.":92}},{"date":"2025-10-22","scores":{"Herb":86,"Ed":93,"Ken R":96,"Peter H.":94}},{"date":"2025-10-24","scores":{"Chris":82,"Keith":95,"Herb":88,"Ed":86,"Cam":95,"Scott":86,"Peter H.":90}},{"date":"2025-10-26","scores":{"Chris":82,"Keith":96,"Herb":88,"Ed":85,"Dias":91,"Derrick":90,"Scott":87,"Peter H.":102,"Stan":93}},{"date":"2025-10-28","scores":{"Herb":91,"Ed":87,"Ken R":93,"Brandon":80,"Peter H.":100,"Stan":87}},{"date":"2025-10-31","scores":{"Chris":86,"Keith":100,"Herb":96,"Ed":97,"Ken R":103,"Derrick":82,"Scott":95,"Ron B":110,"Peter H.":103}},{"date":"2025-11-05","scores":{"Derrick":83,"Scott":86,"Peter H.":93}},{"date":"2025-11-08","scores":{"Chris":79,"Ed":91,"Brandon":77,"Derrick":84,"Scott":81,"Peter H.":94,"Stan":84}},{"date":"2025-11-09","scores":{"Chris":88,"Ed":89,"Brandon":75,"Derrick":85,"Scott":105,"Peter H.":93,"Stan":84}},{"date":"2025-11-14","scores":{"Chris":81,"Keith":95,"Ed":97,"Ken R":86,"TJ":82,"Scott":81,"Ken D":91,"Stan":98}},{"date":"2025-11-16","scores":{"Chris":86,"Keith":104,"Ed":94,"Dias":97,"Cam":93,"Derrick":96,"Scott":88,"Stan":85}},{"date":"2025-11-20","scores":{"Herb":94,"Ed":91,"Dias":94,"Ken R":89,"Cam":94,"Scott":87,"Ron B":94,"Sean Chu":92}},{"date":"2025-11-21","scores":{"Chris":88,"Keith":103,"Herb":89,"Ed":88,"TJ":81,"Brandon":82,"Derrick":93,"Scott":92}},{"date":"2025-11-23","scores":{"Chris":88,"Keith":94,"Herb":86,"Ed":88,"Dias":92,"Cam":94,"Derrick":92}},{"date":"2025-11-28","scores":{"Chris":81,"Herb":93,"Ed":89,"Cam":99,"Brandon":78,"Will":107}},{"date":"2025-11-30","scores":{"Chris":80,"Ed":83,"Efren":102}},{"date":"2025-12-03","scores":{"Herb":85,"Ed":90,"Cam":94,"Neil":95}},{"date":"2025-12-05","scores":{"Chris":87,"Keith":95,"Herb":91,"Ed":82,"Dias":98,"Ken R":92,"TJ":84,"Cam":90,"Brandon":76,"Scott":84}},{"date":"2025-12-07","scores":{"Chris":82,"Keith":88,"Herb":85,"Ed":88,"Dias":99,"Cam":91,"Scott":86}},{"date":"2025-12-12","scores":{"Keith":102,"Herb":85,"Ed":84,"Ken R":92,"Cam":93,"Brandon":74,"Scott":92,"Ron B":97}},{"date":"2025-12-14","scores":{"Keith":104,"Herb":95,"Dias":93,"Scott":90}},{"date":"2025-12-17","scores":{"Chris":83,"Herb":88,"Ed":84,"Brandon":74,"Scott":89}},{"date":"2025-12-19","scores":{"Chris":83,"Keith":95,"Herb":88,"Ed":78,"Dias":93,"Ron B":100,"Song":94}},{"date":"2025-12-21","scores":{"Chris":87,"Herb":88,"Ed":86,"Dias":88,"Ken R":102,"Cam":97,"Neil":92,"Derrick":85,"Peter H.":111,"Harry":115,"Efren":104,"Sean Chu":105,"Song":95,"Emming":102}},{"date":"2025-12-24","scores":{"Chris":78,"Ed":86,"Ken R":88,"Song":93}},{"date":"2025-12-26","scores":{"Chris":82,"Herb":95,"Ed":86,"Dias":93,"Song":91}},{"date":"2025-12-28","scores":{"Chris":84,"Herb":92,"Ed":79,"Dias":92,"Ken R":96,"Derrick":83,"Peter H.":98,"Song":92}},{"date":"2025-12-31","scores":{"Ed":85,"Neil":88,"Brandon":73,"Brian Moyland2":84}},{"date":"2026-01-02","scores":{"Chris":79,"Ed":88}},{"date":"2026-01-03","scores":{"Chris":82,"Ed":86,"Derrick":87}},{"date":"2026-01-04","scores":{"Chris":85,"Keith":98,"Ed":87,"Derrick":88}},{"date":"2026-01-07","scores":{"Chris":84,"Herb":86,"Ed":81}},{"date":"2026-01-09","scores":{"Chris":84,"Keith":98,"Herb":87,"Ed":80}},{"date":"2026-01-10","scores":{"Chris":81,"Ed":89,"Derrick":91}},{"date":"2026-01-11","scores":{"Chris":81,"Keith":110,"Dias":96,"Derrick":90,"Scott":87}},{"date":"2026-01-13","scores":{"Chris":81,"Herb":87,"Ed":93,"Brandon":75,"Ron B":90}},{"date":"2026-01-16","scores":{"Chris":80,"Keith":94,"Herb":90,"Ed":89,"Ron B":106,"Rob Peredo":101}},{"date":"2026-01-18","scores":{"Chris":76,"Keith":107,"Ed":81,"Dias":86,"Derrick":91,"Scott":84,"Kyu":109}},{"date":"2026-01-19","scores":{"Chris":78,"Keith":100,"Herb":89}},{"date":"2026-01-23","scores":{"Chris":77,"Keith":95,"Herb":91,"Ed":87,"Ken R":95,"Neil":80,"Brandon":78,"Derrick":90}},{"date":"2026-01-24","scores":{"Chris":81,"Ed":86,"Scott":79}},{"date":"2026-01-25","scores":{"Chris":83,"Keith":100,"Ed":78,"Dias":92,"Scott":80,"Ron B":101}},{"date":"2026-01-30","scores":{"Chris":87,"Keith":105}},{"date":"2026-01-31","scores":{"Ed":85,"Brandon":81,"Scott":83}},{"date":"2026-02-01","scores":{"Herb":89,"Ed":88,"Dias":90,"Derrick":86,"Scott":79,"Kyu":113}},{"date":"2026-02-05","scores":{"Chris":81,"Keith":102}},{"date":"2026-02-06","scores":{"Ed":85,"Brandon":76}},{"date":"2026-02-08","scores":{"Keith":105,"Ed":94,"Derrick":90}},{"date":"2026-02-11","scores":{"Herb":94,"Ed":87,"Ken R":90}},{"date":"2026-02-13","scores":{"Keith":102,"Herb":91,"Ed":84,"Ken R":87,"Neil":87,"Brandon":84,"Ron B":91}},{"date":"2026-02-15","scores":{"Chris":84,"Keith":93,"Herb":90,"Ed":85,"Dias":95,"Derrick":84,"Scott":90,"Stan":97}},{"date":"2026-02-18","scores":{"Chris":80,"Ed":82}},{"date":"2026-02-19","scores":{"Ed":80,"Stan":88}},{"date":"2026-02-20","scores":{"Chris":79,"Keith":95,"Ed":83,"Dias":93,"Ken R":91}},{"date":"2026-02-22","scores":{"Chris":80,"Keith":96,"Ed":81,"Dias":88,"Ken R":86,"Scott":84,"Kyu":109,"Ken D":92}},{"date":"2026-02-26","scores":{"Chris":81,"Herb":85,"Dias":95,"Ken R":100,"Ron B":99}},{"date":"2026-02-27","scores":{"Keith":99,"Brandon":72,"Ken D":89}},{"date":"2026-03-01","scores":{"Chris":84,"Keith":95,"Ed":88,"Dias":95,"Neil":97,"Derrick":90,"Scott":88}},{"date":"2026-03-03","scores":{"Ed":78}},{"date":"2026-03-06","scores":{"Chris":78,"Keith":94,"Neil":93,"Brandon":80}},{"date":"2026-03-08","scores":{"Chris":89,"Keith":96,"Ed":81,"Derrick":84,"Scott":83}},{"date":"2026-03-11","scores":{"Herb":83,"Ed":90}},{"date":"2026-03-15","scores":{"Chris":87,"Herb":88,"Ed":90,"Dias":100,"Scott":83,"Ron Choi":102}},{"date":"2026-03-22","scores":{"Chris":79,"Keith":96,"Herb":93,"Ed":85,"Dias":93,"Cam":93,"Scott":82}},{"date":"2026-03-27","scores":{"Chris":81,"Keith":99,"Ed":85,"Cam":92}},{"date":"2026-03-29","scores":{"Chris":87,"Keith":98,"Herb":89,"Ed":84,"Brandon":77,"Derrick":92,"Scott":80}},{"date":"2026-04-03","scores":{"Chris":90,"Keith":97,"Herb":86,"Ed":83,"Ken R":93,"Cam":89}},{"date":"2026-04-05","scores":{"Chris":82,"Keith":104,"Ed":90,"Ken R":85,"Scott":88,"Ron B":88}},{"date":"2026-04-08","scores":{"Chris":82,"Herb":92,"Dias":93,"Derrick":90}},{"date":"2026-04-10","scores":{"Keith":100,"Herb":92,"Ed":92,"Ken R":86,"TJ":83}},{"date":"2026-04-12","scores":{"Chris":80,"Keith":100,"Herb":79,"Ed":85,"Dias":90,"Ken R":93,"Derrick":86,"Scott":82,"Ron Choi":99}},{"date":"2026-04-18","scores":{"Chris":80,"Herb":88,"Ed":86,"Dias":88,"Ken R":95,"Brandon":77,"Derrick":86,"Scott":91}},{"date":"2026-04-20","scores":{"Chris":89,"Keith":101,"Herb":88,"Ken R":101,"Scott":88,"Song":90}},{"date":"2026-04-21","scores":{"Chris":92,"Keith":105,"Herb":92,"Ken R":90,"Scott":85,"Song":88}},{"date":"2026-04-22","scores":{"Chris":89,"Keith":99,"Scott":81,"Kyu":110}},{"date":"2026-04-23","scores":{"Chris":89,"Keith":101,"Herb":101,"Scott":85}},{"date":"2026-04-24","scores":{"Ed":78,"Brandon":77,"Rich D":100}},{"date":"2026-04-26","scores":{"Chris":79,"Keith":102,"Ed":84,"Dias":88,"Derrick":85,"Scott":82}},{"date":"2026-05-01","scores":{"Chris":82,"Keith":96,"Herb":86,"Ed":78,"Ken R":94,"TJ":74,"Cam":93,"Brandon":75}},{"date":"2026-05-03","scores":{"Chris":84,"Keith":97,"Dias":93,"Derrick":83,"Scott":87,"Ron B":97}},{"date":"2026-05-06","scores":{"Herb":89,"Ed":85,"Cam":92,"Stan":91}},{"date":"2026-05-08","scores":{"Chris":90,"Herb":91,"Ed":95,"Ken R":103,"Ron B":98}},{"date":"2026-05-13","scores":{"Chris":81,"Herb":88,"Ed":82,"Cam":92}},{"date":"2026-05-15","scores":{"Chris":74,"Keith":93,"Herb":87,"Ed":83,"Ken R":94,"Cam":88,"Ron B":101,"Stan":83}},{"date":"2026-05-17","scores":{"Chris":83,"Keith":94,"Herb":81,"Ed":94,"Dias":91,"Kyu":115,"Emming":99}},{"date":"2026-05-20","scores":{"Herb":94,"Ed":84,"Cam":92,"Brandon":73,"Derrick":89,"Stan":84}},{"date":"2026-05-22","scores":{"Chris":81,"Ed":85,"Ken R":92,"Cam":99}},{"date":"2026-05-24","scores":{"Chris":80,"Herb":93,"Ed":92,"Dias":92,"Derrick":79,"Stan":88}},{"date":"2026-05-29","scores":{"Chris":84,"Herb":89,"Ed":82,"Ron B":99}},{"date":"2026-05-31","scores":{"Chris":80,"Ed":84,"Dias":98,"Cam":92,"Derrick":82,"Scott":78,"Kyu":118}},{"date":"2026-06-05","scores":{"Chris":100,"Herb":83,"Ed":79,"Ken R":95}},{"date":"2026-06-07","scores":{"Chris":85,"Ed":89,"Derrick":88,"Scott":95,"Charles":107}},{"date":"2026-06-12","scores":{"Chris":79,"Herb":84,"TJ":77,"Brandon":78,"Jess Lujan":82}},{"date":"2026-06-14","scores":{"Herb":93,"Ed":83,"Dias":91,"Scott":84}},{"date":"2026-06-20","scores":{"Chris":87,"Scott":90,"Song":92}},{"date":"2026-06-21","scores":{"Chris":91,"Keith":96,"Ed":84,"Dias":95,"Brandon":74,"Scott":89,"Kyu":102,"Harry":112,"Sean Chu":95,"Song":91,"Frank Chen":90}},{"date":"2026-06-26","scores":{"Chris":82,"Keith":97,"Scott":91,"Song":90}},{"date":"2026-06-28","scores":{"Chris":78,"Keith":100,"Ed":81,"Dias":87,"Neil":89,"Scott":80,"Kyu":107,"Matt Frazier":98,"Harry":119,"Sean Chu":87,"Song":91,"Greg Perez":91}},{"date":"2026-07-03","scores":{"Chris":82,"TJ":81,"Scott":83,"Song":85}},{"date":"2026-07-11","scores":{"Chris":80,"Ed":89,"Scott":87}},{"date":"2026-07-12","scores":{"Chris":83,"Herb":93,"Ed":90,"Dias":98,"TJ":71,"Cam":92,"Scott":77,"Kyu":105,"Matt Frazier":93,"Bobby S":109}},{"date":"2026-07-17","scores":{"Chris":81,"Keith":105,"Herb":94,"Ed":95,"TJ":74,"Scott":88,"Ron B":92}},{"date":"2026-07-19","scores":{"Chris":85,"Keith":96,"Herb":84,"Ed":82,"Dias":93,"Scott":79,"Kyu":118,"Matt Frazier":95}},{"date":"2026-07-24","scores":{"Chris":92,"TJ":72}},{"date":"2026-07-26","scores":{"Chris":76,"Keith":94,"Herb":89,"Ed":79,"Dias":92,"Ken R":88,"Cam":96,"Neil":85,"Brandon":74,"Scott":80,"Pete T":93,"Ed H.":88,"Sean Chu":99,"Bobby S":119,"Kevin Lee":106,"Greg Perez":87}},{"date":"2026-07-31","scores":{"Chris":83,"Keith":100,"Herb":94,"Ken R":95,"TJ":76,"Neil":84,"Scott":92}},{"date":"2026-08-02","scores":{"Ken D":84,"Ron Choi":101}},{"date":"2026-08-07","scores":{"Chris":81,"Herb":91,"TJ":76,"Neil":96}},{"date":"2026-08-09","scores":{"Chris":86,"Herb":86,"Ed":91,"Dias":98,"Ken R":88,"Neil":91,"Scott":86,"Nick":96}}]};
 
 /* ================= STATE ================= */
 const LS_KEY = "tomodachi-golf-v1";
+const SNAP_KEY = "tomodachi-golf-snapshots";
+/* Bump this whenever SEED below is regenerated from a newer workbook.
+   Devices holding older data pick up the new scores on next load. */
+const SEED_VERSION = "R5-2026-08-09";
+let seedRefreshNote = null;
 let state = load();
 function load(){
-  try{ const s = JSON.parse(localStorage.getItem(LS_KEY)); if(s && s.rounds) return s; }catch(e){}
-  return seedState();
+  try{
+    const s = JSON.parse(localStorage.getItem(LS_KEY));
+    if(s && s.rounds){
+      const m = migrate(s);
+      if(m._refreshed){ delete m._refreshed; try{ localStorage.setItem(LS_KEY, JSON.stringify(m)); }catch(e){} }
+      return m;
+    }
+  }catch(e){}
+  // first run: persist the seed immediately so the very first snapshot has something to capture
+  const s = seedState();
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+/* Additive only — never silently drops rounds or scores. */
+function migrate(s){
+  if(!s.courses) s.courses = {};
+  if(!s.settings) s.settings = {};
+  if(s.settings.roundPayouts===undefined) s.settings.roundPayouts = false;
+  if(s.settings.autoBackup===undefined) s.settings.autoBackup = false;
+  // backfill course memory from rounds already saved with a course + harder nine
+  for(const r of s.rounds){
+    if(r.course && r.harder && !s.courses[r.course]) s.courses[r.course] = { harder: r.harder };
+  }
+  if(s.seedVersion !== SEED_VERSION) return refreshFromWorkbook(s);
+  return s;
+}
+/* A newer workbook shipped with the app. The workbook is authoritative for SCORES;
+   everything the app added on top (payouts, course, harder nine, guests, score-only
+   flags, settings, PIN) is carried across, and any app-entered round the workbook
+   doesn't have is kept rather than dropped. */
+function refreshFromWorkbook(s){
+  snapshot("before workbook update " + SEED_VERSION);
+  const oldByDate = {};
+  for(const r of s.rounds) if(!oldByDate[r.date]) oldByDate[r.date] = r;
+  const seedDates = new Set(SEED.rounds.map(r=>r.date));
+  const META = ["course","bet","harder","payouts","tops","guests","noBet"];
+  let kept = 0;
+  const rounds = SEED.rounds.map(sr=>{
+    const old = oldByDate[sr.date];
+    const scores = {};
+    for(const [name,val] of Object.entries(sr.scores)){
+      const o = old && old.scores ? old.scores[name] : null;
+      // keep the app's front/back split when it agrees with the workbook total
+      scores[name] = (o && typeof o==="object" && (o.f+o.b)===val) ? {f:o.f, b:o.b} : val;
+    }
+    const out = { date: sr.date, scores };
+    if(old){ for(const k of META) if(old[k]!=null) out[k] = old[k]; }
+    return out;
+  });
+  // rounds entered in the app that the workbook doesn't contain yet — never lose these
+  const extra = s.rounds.filter(r=>
+    !seedDates.has(r.date) && Object.values(r.scores||{}).some(v=>typeof v==="object"));
+  kept = extra.length;
+  const merged = rounds.concat(extra).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  const players = SEED.players.concat((s.players||[]).filter(p=>!SEED.players.includes(p)));
+  seedRefreshNote = `Workbook updated: ${SEED.rounds.length} rounds, ${SEED.players.length} players`
+    + (kept? ` · ${kept} app-only round${kept>1?"s":""} kept` : "");
+  return { ...s, players, rounds: merged, seedVersion: SEED_VERSION, _refreshed: true };
 }
 function seedState(){
-  return { players: SEED.players.slice(), rounds: SEED.rounds.map(r=>({date:r.date, scores:{...r.scores}})) };
+  return migrate({ players: SEED.players.slice(),
+                   rounds: SEED.rounds.map(r=>({date:r.date, scores:{...r.scores}})) });
 }
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+/* Store the CURRENT saved data before a destructive change, keeping the last 5. */
+function snapshot(label){
+  try{
+    const cur = localStorage.getItem(LS_KEY);
+    if(!cur) return;
+    let arr = [];
+    try{ arr = JSON.parse(localStorage.getItem(SNAP_KEY)) || []; }catch(e){}
+    arr.push({ ts: Date.now(), label, data: cur });
+    while(arr.length > 5) arr.shift();
+    try{ localStorage.setItem(SNAP_KEY, JSON.stringify(arr)); }
+    catch(e){ // quota — keep only the newest two and retry once
+      try{ localStorage.setItem(SNAP_KEY, JSON.stringify(arr.slice(-2))); }catch(e2){}
+    }
+  }catch(e){}
+}
+function snapshots(){ try{ return JSON.parse(localStorage.getItem(SNAP_KEY)) || []; }catch(e){ return []; } }
 
 /* ================= ADMIN (PIN gate) ================= */
 const ADM_KEY = "tomodachi-admin-ok";
@@ -298,6 +484,19 @@ function playerStats(name, rounds){
   const avg = rollingAvg(sc);
   return { name, n: sc.length, avg, strokes: avg==null? null : strokesOf(avg) };
 }
+/* Guests have no history — the admin types an 18-hole stroke total, split by the same rule. */
+function strokesFromTotal(t){
+  if(t % 2 === 0) return { f:t/2, b:t/2, total:t };
+  return { f:Math.ceil(t/2), b:Math.floor(t/2), total:t };
+}
+/* Last-5 scoring form vs the player's own rolling average (lower is better in golf). */
+function trendOf(name, rounds){
+  const sc = scoresFor(name, rounds);
+  if(sc.length < 8) return null;
+  const last5 = sc.slice(-5).reduce((a,b)=>a+b,0)/5;
+  const d = last5 - rollingAvg(sc);
+  return { d, dir: d <= -1.5 ? "hot" : d >= 1.5 ? "cold" : "flat" };
+}
 function hedge(avg){
   if(avg <= 81.99) return ["GOLD","b-gold"];
   if(avg <= 86.99) return ["SILVER","b-silver"];
@@ -318,49 +517,89 @@ function rankWithTies(items, key){
   return out;
 }
 function money(x){ const s = x.toFixed(2); return "$"+(s.endsWith(".00")? s.slice(0,-3) : s); }
+function signedMoney(x){ return (x>=0? "+":"−") + money(Math.abs(x)); }
 
+/* Largest-remainder rounding: every share becomes a whole dollar and the
+   section still adds up to exactly what was put in. */
+function roundMap(m){
+  const names = Object.keys(m);
+  if(!names.length) return;
+  const target = Math.round(names.reduce((a,n)=>a+m[n],0));
+  const fl = {}; let used = 0;
+  names.forEach(n=>{ fl[n] = Math.floor(m[n]); used += fl[n]; });
+  let left = target - used;
+  const order = names.slice().sort((a,b)=>(m[b]-fl[b])-(m[a]-fl[a]));
+  for(let i=0; i<order.length && left>0; i++){ fl[order[i]]++; left--; }
+  names.forEach(n=>m[n] = fl[n]);
+}
 function computeResults(entries, preRounds, bet, harder){
-  // entries: [{name, f, b}]  preRounds: history BEFORE this round  bet: $/player
+  // entries: [{name, f, b}], guests [{..., guest:true, s18}], score-only [{..., noBet:true}]
+  // preRounds: history BEFORE this round   bet: $/player
   // harder: "front" | "back" — which nine gets the bigger half of an odd stroke split
   harder = harder || "front";
+  // score-only players bank the round toward qualification but are not in the pot,
+  // not in the rankings, and never affect the baseline
+  const tracking = entries.filter(e=>e.noBet).map(e=>{
+    const s = playerStats(e.name, preRounds);
+    return { name:e.name, gf:e.f, gb:e.b, gt:e.f+e.b, n:s.n, qualified: s.n>=10,
+             after:s.n+1, need:Math.max(0, 10-(s.n+1)), avg:s.avg };
+  });
+  entries = entries.filter(e=>!e.noBet);
   const n = entries.length, pot = n*bet;
+  if(n < 2){
+    // nobody (or only one person) is betting — just a scores-recorded round.
+    // fold the lone bettor into the recorded list so his score still shows.
+    const lone = entries.map(e=>{
+      const s = playerStats(e.name, preRounds);
+      return { name:e.name, gf:e.f, gb:e.b, gt:e.f+e.b, n:s.n, qualified: s.n>=10,
+               after:s.n+1, need:Math.max(0, 10-(s.n+1)), avg:s.avg };
+    });
+    return { gameOn:false, tracking: tracking.concat(lone), n, bet, pot:0, harder,
+             rows:[], front:[], back:[], tot:[], pay:{}, wF:{}, wB:{}, wT:{}, tieNote:"",
+             potF:0, potB:0, pot1:0, pot2:0, base:{f:0,b:0,total:0} };
+  }
   const potF = pot*0.25, potB = pot*0.25, pot1 = pot*0.35, pot2 = pot*0.15;
-  // pre-round strokes
-  const stats = {};
-  for(const e of entries){ stats[e.name] = playerStats(e.name, preRounds); }
+  // pre-round strokes (guests use their manually assigned total)
+  const strokeOf = e => orient(
+    e.guest ? strokesFromTotal(e.s18||0) : (playerStats(e.name, preRounds).strokes || {f:0,b:0,total:0}),
+    harder);
   // baseline = lowest total strokes (tie-break: lowest front)
   let base = null;
   for(const e of entries){
-    const s = orient(stats[e.name].strokes || {f:0,b:0,total:0}, harder);
+    const s = strokeOf(e);
     if(!base || s.total < base.total || (s.total===base.total && s.f < base.f)) base = s;
   }
   const rows = entries.map(e=>{
-    const s = orient(stats[e.name].strokes || {f:0,b:0,total:0}, harder);
+    const s = strokeOf(e);
     const relF = s.f - base.f, relB = s.b - base.b;
-    return { name:e.name, gf:e.f, gb:e.b, gt:e.f+e.b,
+    return { name:e.name, guest:!!e.guest, gf:e.f, gb:e.b, gt:e.f+e.b,
       sf:s.f, sb:s.b, st:s.total, relF, relB, relT:relF+relB,
-      nf:e.f-relF, nb:e.b-relB, nt:(e.f-relF)+(e.b-relB), win:0 };
+      nf:e.f-relF, nb:e.b-relB, nt:(e.f-relF)+(e.b-relB) };
   });
   const front = rankWithTies(rows, r=>r.nf);
   const back  = rankWithTies(rows, r=>r.nb);
   const tot   = rankWithTies(rows, r=>r.nt);
-  const pay = {}; rows.forEach(r=>pay[r.name]=0);
-  const f1 = front.filter(r=>r.rank===1); f1.forEach(r=>pay[r.name]+=potF/f1.length);
-  const b1 = back.filter(r=>r.rank===1);  b1.forEach(r=>pay[r.name]+=potB/b1.length);
+  // per-section winnings
+  const wF={}, wB={}, wT={};
+  const f1 = front.filter(r=>r.rank===1); f1.forEach(r=>wF[r.name]=potF/f1.length);
+  const b1 = back.filter(r=>r.rank===1);  b1.forEach(r=>wB[r.name]=potB/b1.length);
   const t1 = tot.filter(r=>r.rank===1);
   let tieNote = "";
   if(t1.length>1){
-    t1.forEach(r=>pay[r.name]+=(pot1+pot2)/t1.length);
+    t1.forEach(r=>wT[r.name]=(pot1+pot2)/t1.length);
     tieNote = `T1 tie (${t1.length} players): 1st ${money(pot1)} + 2nd ${money(pot2)} = ${money(pot1+pot2)} &divide; ${t1.length} = ${money((pot1+pot2)/t1.length)} each. No separate 2nd-place payout.`;
   } else {
-    pay[t1[0].name]+=pot1;
+    wT[t1[0].name] = pot1;
     const t2 = tot.filter(r=>r.rank===2);
     if(t2.length>1){
-      t2.forEach(r=>pay[r.name]+=pot2/t2.length);
+      t2.forEach(r=>wT[r.name]=pot2/t2.length);
       tieNote = `T2 tie (${t2.length} players): 2nd money ${money(pot2)} &divide; ${t2.length} = ${money(pot2/t2.length)} each.`;
-    } else if(t2.length===1){ pay[t2[0].name]+=pot2; }
+    } else if(t2.length===1){ wT[t2[0].name] = pot2; }
   }
-  return { n, bet, pot, potF, potB, pot1, pot2, rows, front, back, tot, pay, tieNote, base, harder };
+  if(state.settings && state.settings.roundPayouts){ roundMap(wF); roundMap(wB); roundMap(wT); }
+  const pay = {};
+  rows.forEach(r=>pay[r.name] = (wF[r.name]||0)+(wB[r.name]||0)+(wT[r.name]||0));
+  return { gameOn:true, tracking, n, bet, pot, potF, potB, pot1, pot2, rows, front, back, tot, pay, wF, wB, wT, tieNote, base, harder };
 }
 
 /* ================= FUNNY SUMMARY ================= */
@@ -424,39 +663,66 @@ function renderCard(){
     let chg = `<span class="chg-none">—</span>`;
     if(dN!=null && dN>0) chg = `<span class="chg-dn">18h -${dN}</span>`;
     else if(dN!=null && dN<0) chg = `<span class="chg-up">18h +${-dN}</span>`;
-    html += `<tr><td><span class="rank">${i+1}</span></td><td class="pl">${s.name}</td>
-      <td><b>${s.strokes.f} / ${s.strokes.b}</b></td><td class="avg">${fmt2(s.avg)}</td>
+    const t = trendOf(s.name, state.rounds);
+    const tr = (t && t.dir==="hot") ? `<span class="trend t-hot" title="Last 5 rounds ${Math.abs(t.d).toFixed(1)} better than average">↘</span>`
+             : (t && t.dir==="cold") ? `<span class="trend t-cold" title="Last 5 rounds ${t.d.toFixed(1)} worse than average">↗</span>` : "";
+    html += `<tr class="tap" data-player="${s.name}"><td><span class="rank">${i+1}</span></td><td class="pl">${s.name}</td>
+      <td><b>${s.strokes.f} / ${s.strokes.b}</b></td><td class="avg">${fmt2(s.avg)}${tr}</td>
       <td>${s.n}</td><td>${chg}</td><td><span class="badge ${hCls}">${hName}</span></td></tr>`;
   });
   document.getElementById("gd-table").innerHTML = html;
+  document.querySelectorAll("#gd-table tr[data-player]").forEach(tr=>tr.onclick=()=>showProfile(tr.dataset.player));
   // changes box
   let ch = "";
   if(changes.gained.length) ch += `<div style="margin-bottom:8px"><b class="chg-up">▲ Gained Strokes</b><div class="note">${changes.gained.join("<br>")}</div></div>`;
   if(changes.lost.length) ch += `<div style="margin-bottom:8px"><b class="chg-dn">▼ Lost Strokes</b><div class="note">${changes.lost.join("<br>")}</div></div>`;
   ch += changes.gained.length||changes.lost.length ? `<div><b style="color:var(--muted)">No Change:</b> <span class="note">${changes.same.join(", ")||"—"}</span></div>` : `<div class="note">No stroke changes vs the prior card.</div>`;
   document.getElementById("gd-changes").innerHTML = ch;
-  // provisional
-  let ph = `<tr><th style="text-align:left">Player</th><th>Rnds</th><th>Avg</th><th>Strokes</th></tr>`;
-  prov.forEach(s=>{ ph += `<tr><td class="pl">${s.name}</td><td>${s.n}</td><td class="avg">${fmt2(s.avg)}</td><td>${s.strokes.f} / ${s.strokes.b}</td></tr>`; });
+  // provisional — with countdown to qualifying for the official card
+  let ph = `<tr><th style="text-align:left">Player</th><th>Rnds</th><th>Avg</th><th>Strokes</th><th>To Qualify</th></tr>`;
+  prov.forEach(s=>{
+    const left = 10 - s.n;
+    ph += `<tr class="tap" data-player="${s.name}"><td class="pl">${s.name}</td><td>${s.n}</td><td class="avg">${fmt2(s.avg)}</td>
+      <td>${s.strokes.f} / ${s.strokes.b}</td><td><b class="chg-up">${left} more</b></td></tr>`;
+  });
   document.getElementById("gd-provisional").innerHTML = prov.length? ph : `<tr><td class="note">None</td></tr>`;
+  document.querySelectorAll("#gd-provisional tr[data-player]").forEach(tr=>tr.onclick=()=>showProfile(tr.dataset.player));
 }
 
 /* ================= NEW ROUND ================= */
 let selected = new Set();
+let noBetSet = new Set();  // members whose score is recorded but who sit out the betting
 let harderSide = "front";
-document.querySelectorAll("#r-harder .chip").forEach(b=>b.onclick=()=>{
-  harderSide = b.dataset.h;
+let guestList = [];      // [{name, s18}]
+let editIndex = null;    // index into state.rounds when editing an existing round
+function setHarder(h){
+  harderSide = h;
   document.querySelectorAll("#r-harder .chip").forEach(x=>x.classList.toggle("on", x.dataset.h===harderSide));
-  renderGrid();
-});
+}
+document.querySelectorAll("#r-harder .chip").forEach(b=>b.onclick=()=>{ setHarder(b.dataset.h); renderGrid(); });
 function renderRound(){
   const adm = isAdmin();
   document.getElementById("r-lockbox").style.display = adm? "none":"block";
   document.getElementById("r-formbox").style.display = adm? "block":"none";
   document.getElementById("r-calc").parentElement.style.display = adm? "flex":"none";
+  document.getElementById("r-editbar").style.display = (adm && editIndex!=null)? "block":"none";
+  if(editIndex!=null){
+    document.getElementById("r-edittext").textContent = `✏️ Editing the round of ${usDate(state.rounds[editIndex].date)}`;
+    document.getElementById("r-calc").textContent = "💰 Recalculate";
+  } else {
+    document.getElementById("r-calc").textContent = "💰 Calculate Payouts";
+  }
   if(!adm){ document.getElementById("r-scores-box").style.display="none"; return; }
   const el = document.getElementById("r-date");
   if(!el.value) el.value = new Date().toISOString().slice(0,10);
+  // course memory: known courses in the dropdown, harder-9 auto-selected
+  document.getElementById("courselist").innerHTML =
+    Object.keys(state.courses||{}).sort().map(c=>`<option value="${c}">`).join("");
+  const cn = document.getElementById("r-coursenote"), cv = document.getElementById("r-course").value.trim();
+  const known = state.courses && state.courses[cv];
+  cn.innerHTML = known
+    ? `📍 Remembered: <b>${cv}</b> — ${known.harder==="back"?"Back":"Front"} 9 is the harder side.`
+    : (cv? `🆕 New course — the harder 9 you pick will be remembered for next time.` : "");
   const stats = {}; state.players.forEach(p=>stats[p]=playerStats(p,state.rounds));
   const chips = state.players.slice().sort((a,b)=>{
     const A=stats[a], B=stats[b];
@@ -468,39 +734,112 @@ function renderRound(){
     return `<button class="chip ${selected.has(p)?"on":""}" data-p="${p}">${p} <span class="st">${st}</span></button>`;
   }).join("");
   document.getElementById("r-chips").innerHTML = chips;
-  document.getElementById("r-count").textContent = selected.size? `(${selected.size} selected)` : "";
+  const inGame = [...selected].filter(p=>!noBetSet.has(p)).length + guestList.length;
+  const tot = selected.size + guestList.length;
+  document.getElementById("r-count").textContent = tot? `(${tot} playing${noBetSet.size? ", "+inGame+" betting":""})` : "";
   document.querySelectorAll("#r-chips .chip").forEach(c=>c.onclick=()=>{
-    const p=c.dataset.p; selected.has(p)? selected.delete(p) : selected.add(p);
+    const p = c.dataset.p;
+    if(selected.has(p)){ selected.delete(p); noBetSet.delete(p); }
+    else {
+      selected.add(p);
+      // players short of 10 rounds default to score-only — the admin can override
+      if(playerStats(p, preRoundsNow()).n < 10) noBetSet.add(p);
+    }
     renderRound(); renderGrid();
   });
+  renderGuests();
   renderGrid();
+}
+function renderGuests(){
+  const box = document.getElementById("r-guests");
+  if(!guestList.length){ box.innerHTML=""; return; }
+  box.innerHTML = `<div class="note">Guests play for money today but never enter the averages, the card, or the Excel file. Enter the strokes you're giving them for 18 holes.</div>` +
+    guestList.map((g,i)=>`<div class="guest-row">
+      <div class="gname">${g.name}<span class="gtag">GUEST</span><span>18-hole strokes</span></div>
+      <div><input type="number" inputmode="numeric" id="gs-${i}" value="${g.s18}" min="0" max="40"></div>
+      <div><button class="btn sm danger" data-gdel="${i}" style="padding:8px 10px">✕</button></div>
+    </div>`).join("");
+  guestList.forEach((g,i)=>{
+    const inp = document.getElementById(`gs-${i}`);
+    inp.oninput = ()=>{ guestList[i].s18 = +inp.value||0; };
+    inp.onchange = ()=>renderGrid();
+  });
+  box.querySelectorAll("[data-gdel]").forEach(b=>b.onclick=()=>{
+    guestList.splice(+b.dataset.gdel,1); renderRound();
+  });
+}
+/* When editing an existing round, "pre-round" history is everything before it. */
+function preRoundsNow(){ return editIndex==null ? state.rounds : state.rounds.slice(0, editIndex); }
+function participants(){
+  const pre = preRoundsNow();
+  const list = [...selected].map(p=>{
+    const s = playerStats(p, pre);
+    return { name:p, key:cssId(p), guest:false, n:s.n, noBet:noBetSet.has(p),
+             str: s.strokes? orient(s.strokes, harderSide) : null };
+  });
+  guestList.forEach(g=>list.push({ name:g.name, key:"guest_"+cssId(g.name), guest:true, s18:g.s18, noBet:false,
+             str: orient(strokesFromTotal(g.s18||0), harderSide) }));
+  return list;
 }
 function renderGrid(){
   const box = document.getElementById("r-scores-box");
-  if(!selected.size){ box.style.display="none"; return; }
+  const people = participants();
+  if(!people.length){ box.style.display="none"; return; }
   box.style.display="block";
   const grid = document.getElementById("r-grid");
   const prev = {}; grid.querySelectorAll("input").forEach(i=>prev[i.id]=i.value);
   let h = `<div class="hd" style="text-align:left">Player (strokes)</div><div class="hd">Front 9</div><div class="hd">Back 9</div><div class="hd">Total</div>`;
-  for(const p of selected){
-    const s = playerStats(p, state.rounds);
-    const os = s.strokes? orient(s.strokes, harderSide) : null;
-    const st = os? `F${os.f} / B${os.b}` : "no history";
-    const idF=`gf-${cssId(p)}`, idB=`gb-${cssId(p)}`;
-    h += `<div class="nm">${p}<span class="st">${st} &middot; ${s.n} rds</span></div>
+  for(const p of people){
+    const st = p.noBet? `${p.n} of 10 rounds` : (p.str? `F${p.str.f} / B${p.str.b}` : "no history");
+    const sub = p.guest? `${st} &middot; guest` : (p.noBet? st : `${st} &middot; ${p.n} rds`);
+    const pill = p.guest ? ""
+      : `<span class="modepill ${p.noBet?"mp-track":"mp-bet"}" data-mode="${p.name}">${p.noBet?"📊 SCORE ONLY":"💰 IN THE GAME"}</span>`;
+    const idF=`gf-${p.key}`, idB=`gb-${p.key}`;
+    h += `<div class="nm">${p.name}${p.guest?'<span class="gtag">GUEST</span>':""}<span class="st">${sub}</span>${pill}</div>
       <div><input type="number" inputmode="numeric" id="${idF}" value="${prev[idF]||""}" placeholder="—"></div>
       <div><input type="number" inputmode="numeric" id="${idB}" value="${prev[idB]||""}" placeholder="—"></div>
-      <div class="tot" id="tt-${cssId(p)}">—</div>`;
+      <div class="tot" id="tt-${p.key}">—</div>`;
   }
   grid.innerHTML = h;
-  grid.querySelectorAll("input").forEach(i=>i.oninput=()=>{
-    for(const p of selected){
-      const f=+document.getElementById(`gf-${cssId(p)}`).value||0, b=+document.getElementById(`gb-${cssId(p)}`).value||0;
-      document.getElementById(`tt-${cssId(p)}`).textContent = (f&&b)? f+b : "—";
-    }
+  grid.querySelectorAll("[data-mode]").forEach(el=>el.onclick=()=>{
+    const nm = el.dataset.mode;
+    noBetSet.has(nm)? noBetSet.delete(nm) : noBetSet.add(nm);
+    renderRound();
   });
+  const sync = ()=>{
+    for(const p of people){
+      const f=+document.getElementById(`gf-${p.key}`).value||0, b=+document.getElementById(`gb-${p.key}`).value||0;
+      document.getElementById(`tt-${p.key}`).textContent = (f&&b)? f+b : "—";
+    }
+  };
+  grid.querySelectorAll("input").forEach(i=>i.oninput=sync);
+  sync();
+  // live summary of who is actually in the pot
+  const bettors = people.filter(p=>!p.noBet), trackers = people.filter(p=>p.noBet);
+  const betAmt = +document.getElementById("r-bet").value || 20;
+  document.getElementById("r-mix").innerHTML = trackers.length
+    ? `💰 <b>${bettors.length}</b> in the game (pot ${money(bettors.length*betAmt)}) &nbsp;·&nbsp; 📊 <b>${trackers.length}</b> score only: ${trackers.map(p=>p.name).join(", ")}`
+    : `💰 All <b>${bettors.length}</b> players are in the game — pot ${money(bettors.length*betAmt)}.`;
 }
 function cssId(p){ return p.replace(/[^a-z0-9]/gi,"_"); }
+
+/* ---- score sanity check: catch fat-fingered entries before they poison an average ---- */
+function validateEntries(entries){
+  const hard=[], soft=[], pre = preRoundsNow();
+  for(const e of entries){
+    for(const [lbl,v] of [["Front",e.f],["Back",e.b]]){
+      if(!Number.isInteger(v) || v<20 || v>80) hard.push(`${e.name}: ${lbl} 9 of ${v} is outside the sane range (20–80).`);
+    }
+    if(!e.guest){
+      const s = playerStats(e.name, pre);
+      if(s.n>=3 && s.avg!=null){
+        const d = (e.f+e.b) - s.avg;
+        if(Math.abs(d) > 15) soft.push(`${e.name}: ${e.f+e.b} is ${Math.abs(Math.round(d))} strokes ${d>0?"worse":"better"} than his ${s.avg.toFixed(1)} average.`);
+      }
+    }
+  }
+  return { hard, soft };
+}
 
 /* ================= RESULTS RENDER ================= */
 let pendingRound = null; // {date, course, bet, entries}
@@ -512,19 +851,24 @@ function showResults(meta, preRounds, savable){
     let t = `<div class="tblwrap"><table><tr><th>Rk</th><th style="text-align:left">Player</th><th>Gross</th><th>Str</th><th>Net</th><th>Payout</th></tr>`;
     ranked.forEach(r=>{
       const w = winners[r.name]||0;
-      t += `<tr><td>${r.tied?"T":""}${r.rank}</td><td class="pl">${r.name}</td><td>${r[grossKey]}</td><td>${r._str}</td><td><b>${r[netKey]}</b></td><td class="${w?"money":"zero"}">${w?money(w):"$0"}</td></tr>`;
+      t += `<tr><td>${r.tied?"T":""}${r.rank}</td><td class="pl">${r.name}${r.guest?'<span class="gtag">G</span>':""}</td><td>${r[grossKey]}</td><td>${r._str}</td><td><b>${r[netKey]}</b></td><td class="${w?"money":"zero"}">${w?money(w):"$0"}</td></tr>`;
     });
     return t+`</table></div>`;
   };
-  // per-section winner maps
-  const wF={},wB={},wT={};
-  const f1=res.front.filter(r=>r.rank===1); f1.forEach(r=>wF[r.name]=res.potF/f1.length);
-  const b1=res.back.filter(r=>r.rank===1); b1.forEach(r=>wB[r.name]=res.potB/b1.length);
-  const t1=res.tot.filter(r=>r.rank===1);
-  if(t1.length>1){ t1.forEach(r=>wT[r.name]=(res.pot1+res.pot2)/t1.length); }
-  else { wT[t1[0].name]=res.pot1; const t2=res.tot.filter(r=>r.rank===2); t2.forEach(r=>wT[r.name]=res.pot2/t2.length); }
+  const { wF, wB, wT } = res;
   res.front.forEach(r=>r._str=`${r.relF}`); res.back.forEach(r=>r._str=`${r.relB}`); res.tot.forEach(r=>r._str=`${r.relF}/${r.relB}`);
-  let h = `
+  // score-only players: recorded, not in the pot
+  const trackHtml = res.tracking.length ? `
+  <h2 class="sec">📊 Score Only — Not In The Pot</h2>
+  <div class="tblwrap"><table><tr><th style="text-align:left">Player</th><th>Front</th><th>Back</th><th>Total</th><th>Rounds</th><th>Status</th></tr>
+  ${res.tracking.map(t=>`<tr class="trackrow"><td class="pl">${t.name}</td><td>${t.gf}</td><td>${t.gb}</td><td class="avg">${t.gt}</td>
+    <td>${t.qualified? t.after : t.after+" of 10"}</td>
+    <td>${t.qualified? `<span class="chg-none">sat out</span>`
+        : t.need? `<b class="chg-up">${t.need} more</b>`
+        : `<b style="color:#7FD98A">QUALIFIED! 🎉</b>`}</td></tr>`).join("")}
+  </table></div>
+  <div class="note">These scores count toward each player's rolling average and 10-round qualification. They paid nothing into today's pot and won nothing from it.</div>` : "";
+  let h = res.gameOn ? `
   <div class="card-box"><h3>${usDate(meta.date)}${meta.course? " &middot; "+meta.course:""}</h3>
     <div class="pot">
       <div class="cell"><div class="l">Pot (${res.n}×${money(res.bet)})</div><div class="v">${money(res.pot)}</div></div>
@@ -532,7 +876,8 @@ function showResults(meta, preRounds, savable){
       <div class="cell"><div class="l">Back 25%</div><div class="v">${money(res.potB)}</div></div>
       <div class="cell"><div class="l">1st 35% / 2nd 15%</div><div class="v">${money(res.pot1)} / ${money(res.pot2)}</div></div>
     </div>
-    <div class="note">Harder 9: <b>${res.harder==="back"?"Back":"Front"}</b> (bigger stroke split applied there). Baseline (lowest strokes): <b>${res.rows.find(r=>r.relT===0 && r.st===res.base.total)?.name || "—"}</b> at F${res.base.f} / B${res.base.b}. Net = gross − relative strokes per 9.</div>
+    <div class="note">Harder 9: <b>${res.harder==="back"?"Back":"Front"}</b> (bigger stroke split applied there). Baseline (lowest strokes): <b>${res.rows.find(r=>r.relT===0 && r.st===res.base.total)?.name || "—"}</b> at F${res.base.f} / B${res.base.b}. Net = gross − relative strokes per 9.
+    ${res.tracking.length? `<br>📊 ${res.tracking.length} player${res.tracking.length>1?"s":""} recorded scores only and ${res.tracking.length>1?"are":"is"} not in the pot.`:""}</div>
   </div>
   <h2 class="sec">Front 9</h2>${secTbl(res.front,"nf","gf",res.potF,wF)}
   <h2 class="sec">Back 9</h2>${secTbl(res.back,"nb","gb",res.potB,wB)}
@@ -542,14 +887,22 @@ function showResults(meta, preRounds, savable){
   <div class="tblwrap"><table><tr><th style="text-align:left">Player</th><th>F</th><th>B</th><th>Tot</th><th>Str</th><th>Net</th><th>Winnings</th><th>+/−</th></tr>
   ${res.rows.slice().sort((a,b)=>res.pay[b.name]-res.pay[a.name]).map(r=>{
     const w=res.pay[r.name], net=w-res.bet;
-    return `<tr><td class="pl">${r.name}</td><td>${r.gf}</td><td>${r.gb}</td><td>${r.gt}</td><td>${r.relF}/${r.relB}</td><td><b>${r.nt}</b></td><td class="${w?"money":"zero"}">${w?money(w):"$0"}</td><td class="${net>0?"money":net<0?"chg-dn":"zero"}">${net>0?"+":""}${money(Math.abs(net)).replace("$", net<0?"-$":"$")}</td></tr>`;
+    return `<tr><td class="pl">${r.name}${r.guest?'<span class="gtag">G</span>':""}</td><td>${r.gf}</td><td>${r.gb}</td><td>${r.gt}</td><td>${r.relF}/${r.relB}</td><td><b>${r.nt}</b></td><td class="${w?"money":"zero"}">${w?money(w):"$0"}</td><td class="${net>0?"money":net<0?"chg-dn":"zero"}">${net>0?"+":""}${money(Math.abs(net)).replace("$", net<0?"-$":"$")}</td></tr>`;
   }).join("")}
   </table></div>
+  ${trackHtml}
   <h2 class="sec">The Word</h2>
-  <div class="funny">${funnySummary(res)}</div>`;
+  <div class="funny">${funnySummary(res)}</div>`
+  : `
+  <div class="card-box"><h3>${usDate(meta.date)}${meta.course? " &middot; "+meta.course:""}</h3>
+    <div class="note">📊 <b>No betting this round.</b> ${res.n===1? "Only one player was in the game, so there's no pot to split." : "Nobody was entered into the game."}
+    Scores below are recorded and count toward each player's rolling average.</div>
+  </div>${trackHtml}`;
   // post-round stroke changes (shared by the table below and the shareable image)
-  const after = preRounds.concat([{date:meta.date, scores:Object.fromEntries(meta.entries.map(e=>[e.name,{f:e.f,b:e.b}]))}]);
-  meta._next = meta.entries.map(e=>{
+  // guests are excluded — they never touch anyone's averages
+  const members = meta.entries.filter(e=>!e.guest);
+  const after = preRounds.concat([{date:meta.date, scores:Object.fromEntries(members.map(e=>[e.name,{f:e.f,b:e.b}]))}]);
+  meta._next = members.map(e=>{
     const was = playerStats(e.name, preRounds), now = playerStats(e.name, after);
     return { name:e.name, n:now.n, avg:now.avg, ns:now.strokes, ws:was.strokes,
              mv:(was.strokes&&now.strokes)? (now.strokes.total-was.strokes.total) : 0 };
@@ -571,8 +924,12 @@ function whatsappCard(res, meta){
   const L=[];
   L.push(`🏌️ *TOMODACHI GOLF* — ${usDate(meta.date)}${meta.course? " @ "+meta.course:""}`);
   L.push(`━━━━━━━━━━━━━━━━━━`);
-  L.push(`💰 POT: ${res.n} × ${money(res.bet)} = *${money(res.pot)}*`);
-  L.push(`Front ${money(res.potF)} | Back ${money(res.potB)} | 1st ${money(res.pot1)} | 2nd ${money(res.pot2)}`);
+  if(res.gameOn){
+    L.push(`💰 POT: ${res.n} × ${money(res.bet)} = *${money(res.pot)}*`);
+    L.push(`Front ${money(res.potF)} | Back ${money(res.potB)} | 1st ${money(res.pot1)} | 2nd ${money(res.pot2)}`);
+  } else {
+    L.push(`📊 No betting this round — scores recorded only.`);
+  }
   L.push(`⛳ Harder 9: ${res.harder==="back"?"Back":"Front"} (bigger stroke split applied there)`);
   const sec=(title,ranked,netKey,grossKey,winners)=>{
     L.push(``); L.push(`*${title}*`);
@@ -581,32 +938,30 @@ function whatsappCard(res, meta){
       L.push(`${r.tied?"T":""}${r.rank}. ${r.name} — ${r[grossKey]} (net ${r[netKey]})${w?" 💵 "+money(w):""}`);
     });
   };
-  const wF={},wB={},wT={};
-  const f1=res.front.filter(r=>r.rank===1); f1.forEach(r=>wF[r.name]=res.potF/f1.length);
-  const b1=res.back.filter(r=>r.rank===1); b1.forEach(r=>wB[r.name]=res.potB/b1.length);
-  const t1=res.tot.filter(r=>r.rank===1);
-  if(t1.length>1){ t1.forEach(r=>wT[r.name]=(res.pot1+res.pot2)/t1.length); }
-  else { wT[t1[0].name]=res.pot1; res.tot.filter(r=>r.rank===2).forEach((r,_,arr)=>wT[r.name]=res.pot2/arr.length); }
-  sec("FRONT 9 (25%)",res.front,"nf","gf",wF);
-  sec("BACK 9 (25%)",res.back,"nb","gb",wB);
-  sec("TOTAL NET (50%)",res.tot,"nt","gt",wT);
-  if(res.tieNote) L.push(`🧮 ${res.tieNote.replace(/&divide;/g,"÷")}`);
-  L.push(``); L.push(`*FINAL SUMMARY*`);
-  res.rows.slice().sort((a,b)=>res.pay[b.name]-res.pay[a.name]).forEach(r=>{
-    const w=res.pay[r.name], net=w-res.bet;
-    L.push(`${r.name}: F${r.gf} B${r.gb} T${r.gt} | str ${r.relF}/${r.relB} | net ${r.nt} | ${w?money(w):"$0"} (${net>=0?"+":"-"}${money(Math.abs(net)).slice(1)})`);
-  });
+  const { wF, wB, wT } = res;
+  if(res.gameOn){
+    sec("FRONT 9 (25%)",res.front,"nf","gf",wF);
+    sec("BACK 9 (25%)",res.back,"nb","gb",wB);
+    sec("TOTAL NET (50%)",res.tot,"nt","gt",wT);
+    if(res.tieNote) L.push(`🧮 ${res.tieNote.replace(/&divide;/g,"÷")}`);
+    L.push(``); L.push(`*FINAL SUMMARY*`);
+    res.rows.slice().sort((a,b)=>res.pay[b.name]-res.pay[a.name]).forEach(r=>{
+      const w=res.pay[r.name], net=w-res.bet;
+      L.push(`${r.name}${r.guest?" (guest)":""}: F${r.gf} B${r.gb} T${r.gt} | str ${r.relF}/${r.relB} | net ${r.nt} | ${w?money(w):"$0"} (${net>=0?"+":"-"}${money(Math.abs(net)).slice(1)})`);
+    });
+  }
+  if(res.tracking.length){
+    L.push(``); L.push(`*📊 SCORE ONLY (not in the pot)*`);
+    res.tracking.forEach(t=>{
+      L.push(`${t.name}: F${t.gf} B${t.gb} T${t.gt} — ${t.qualified? "sat out of the betting"
+        : `${t.after} of 10 rounds${t.need? ` (${t.need} to go)` : ` ✅ QUALIFIED!`}`}`);
+    });
+  }
   L.push(``);
   L.push(document.querySelector(".funny")? "😄 "+document.querySelector(".funny").textContent : "");
-  // updated strokes
-  const after = state.rounds.some(r=>r.date===meta.date && r._id===meta._id) ? state.rounds
-    : state.rounds.concat([{date:meta.date, scores:Object.fromEntries(meta.entries.map(e=>[e.name,{f:e.f,b:e.b}]))}]);
   L.push(``); L.push(`*UPDATED STROKES (next game)*`);
-  meta.entries.forEach(e=>{
-    const before = playerStats(e.name, after.filter(r=>!(r.date===meta.date && r.scores[e.name] && totalOf(r.scores[e.name])===e.f+e.b)));
-    const now = playerStats(e.name, after);
-    const mv = (before.strokes&&now.strokes)? now.strokes.total-before.strokes.total : 0;
-    L.push(`${e.name}: ${now.n} rds | avg ${fmt2(now.avg)} | ${now.strokes.f}/${now.strokes.b} (was ${before.strokes? before.strokes.f+"/"+before.strokes.b:"—"}) ${mv<0?"▼":mv>0?"▲":"—"}`);
+  (meta._next||[]).forEach(x=>{
+    L.push(`${x.name}: ${x.n} rds | avg ${fmt2(x.avg)} | ${x.ns.f}/${x.ns.b} (was ${x.ws? x.ws.f+"/"+x.ws.b:"—"}) ${x.mv<0?"▼":x.mv>0?"▲":"—"}`);
   });
   return L.join("\n");
 }
@@ -617,13 +972,7 @@ function makeRoundImage(res, meta){
   const cv = document.createElement("canvas");
   let ctx = cv.getContext("2d");
   const GOLD="#C9A84C", CREAM="#F0EAD8", BG="#0A1A0D", THEAD="#1A3A20", RA="#0D1F10", RB="#132B17", MUT="#8FA391", GRN="#7FD98A", RED="#E05C4B", AMB="#E8A83C";
-  // winner maps per section
-  const wF={},wB={},wT={};
-  const f1=res.front.filter(r=>r.rank===1); f1.forEach(r=>wF[r.name]=res.potF/f1.length);
-  const b1=res.back.filter(r=>r.rank===1); b1.forEach(r=>wB[r.name]=res.potB/b1.length);
-  const t1=res.tot.filter(r=>r.rank===1);
-  if(t1.length>1){ t1.forEach(r=>wT[r.name]=(res.pot1+res.pot2)/t1.length); }
-  else { wT[t1[0].name]=res.pot1; res.tot.filter(r=>r.rank===2).forEach((r,_,a)=>wT[r.name]=res.pot2/a.length); }
+  const { wF, wB, wT } = res;
   // funny text wrap measurement
   const funnyEl = document.querySelector("#res-body .funny");
   const funny = funnyEl? funnyEl.textContent : "";
@@ -631,11 +980,14 @@ function makeRoundImage(res, meta){
   const funnyLines = wrap(ctx, funny, IW-40);
   // height budget
   const secH = rows => 56+46+rows*42+20;
-  let H = 210 + 100;
-  H += secH(res.front.length) + secH(res.back.length) + secH(res.tot.length);
-  if(res.tieNote) H += 44;
-  H += secH(res.rows.length);
-  H += 40 + funnyLines.length*34 + 30;
+  let H = 210 + (res.gameOn? 100 : 40);
+  if(res.gameOn){
+    H += secH(res.front.length) + secH(res.back.length) + secH(res.tot.length);
+    if(res.tieNote) H += 44;
+    H += secH(res.rows.length);
+    H += 40 + funnyLines.length*34 + 30;
+  }
+  if(res.tracking.length) H += secH(res.tracking.length) + 34;
   H += secH(meta._next.length);
   H += 70;
   cv.width=W; cv.height=H;
@@ -650,18 +1002,21 @@ function makeRoundImage(res, meta){
   ctx.fillStyle=CREAM; ctx.font="italic 26px Georgia";
   ctx.fillText(usDate(meta.date)+(meta.course? "  ·  "+meta.course:""), W/2, y); y+=34;
   ctx.fillStyle=MUT; ctx.font="22px Arial";
-  ctx.fillText(`Harder 9: ${res.harder==="back"?"Back":"Front"}  ·  Pot ${money(res.pot)} (${res.n} × ${money(res.bet)})`, W/2, y); y+=26;
-  // pot bar
-  const cells=[["FRONT 25%",money(res.potF)],["BACK 25%",money(res.potB)],["1ST 35%",money(res.pot1)],["2ND 15%",money(res.pot2)]];
-  const cw=(IW-30)/4;
-  cells.forEach((c,i)=>{
-    const x=P+i*(cw+10);
-    ctx.fillStyle=THEAD; ctx.fillRect(x,y,cw,66);
-    ctx.strokeStyle=GOLD; ctx.lineWidth=1.5; ctx.strokeRect(x,y,cw,66);
-    ctx.fillStyle=GOLD; ctx.font="bold 18px Arial"; ctx.fillText(c[0], x+cw/2, y+26);
-    ctx.fillStyle=CREAM; ctx.font="bold 26px Arial"; ctx.fillText(c[1], x+cw/2, y+54);
-  });
-  y+=100;
+  ctx.fillText(res.gameOn
+    ? `Harder 9: ${res.harder==="back"?"Back":"Front"}  ·  Pot ${money(res.pot)} (${res.n} × ${money(res.bet)})`
+    : `Harder 9: ${res.harder==="back"?"Back":"Front"}  ·  No betting — scores recorded only`, W/2, y); y+=26;
+  if(res.gameOn){
+    const cells=[["FRONT 25%",money(res.potF)],["BACK 25%",money(res.potB)],["1ST 35%",money(res.pot1)],["2ND 15%",money(res.pot2)]];
+    const cw=(IW-30)/4;
+    cells.forEach((c,i)=>{
+      const x=P+i*(cw+10);
+      ctx.fillStyle=THEAD; ctx.fillRect(x,y,cw,66);
+      ctx.strokeStyle=GOLD; ctx.lineWidth=1.5; ctx.strokeRect(x,y,cw,66);
+      ctx.fillStyle=GOLD; ctx.font="bold 18px Arial"; ctx.fillText(c[0], x+cw/2, y+26);
+      ctx.fillStyle=CREAM; ctx.font="bold 26px Arial"; ctx.fillText(c[1], x+cw/2, y+54);
+    });
+    y+=100;
+  } else y+=40;
   const tbl=(title, headers, widths, rows)=>{
     ctx.fillStyle=GOLD; ctx.font="bold 30px Georgia"; ctx.textAlign="center";
     ctx.fillText(title, W/2, y+36); y+=56;
@@ -687,26 +1042,37 @@ function makeRoundImage(res, meta){
   };
   const T=(t,o={})=>({t,...o});
   const w6=[90,330,140,140,140,160];
-  tbl("FRONT 9  ·  "+money(res.potF), ["RK","PLAYER","GROSS","STR","NET","PAYOUT"], w6,
-    res.front.map(r=>[T((r.tied?"T":"")+r.rank), T(r.name,{b:1}), T(r.gf), T(r.relF), T(r.nf,{b:1,c:GOLD}), T(wF[r.name]?money(wF[r.name]):"$0",{c:wF[r.name]?GRN:MUT,b:1})]));
-  tbl("BACK 9  ·  "+money(res.potB), ["RK","PLAYER","GROSS","STR","NET","PAYOUT"], w6,
-    res.back.map(r=>[T((r.tied?"T":"")+r.rank), T(r.name,{b:1}), T(r.gb), T(r.relB), T(r.nb,{b:1,c:GOLD}), T(wB[r.name]?money(wB[r.name]):"$0",{c:wB[r.name]?GRN:MUT,b:1})]));
-  tbl("TOTAL NET  ·  "+money(res.pot1)+" / "+money(res.pot2), ["RK","PLAYER","GROSS","STR","NET","PAYOUT"], w6,
-    res.tot.map(r=>[T((r.tied?"T":"")+r.rank), T(r.name,{b:1}), T(r.gt), T(r.relF+"/"+r.relB), T(r.nt,{b:1,c:GOLD}), T(wT[r.name]?money(wT[r.name]):"$0",{c:wT[r.name]?GRN:MUT,b:1})]));
-  if(res.tieNote){
-    ctx.fillStyle=AMB; ctx.font="italic 21px Arial"; ctx.textAlign="center";
-    ctx.fillText(res.tieNote.replace(/&divide;/g,"÷"), W/2, y); y+=44;
+  if(res.gameOn){
+    tbl("FRONT 9  ·  "+money(res.potF), ["RK","PLAYER","GROSS","STR","NET","PAYOUT"], w6,
+      res.front.map(r=>[T((r.tied?"T":"")+r.rank), T(r.name,{b:1}), T(r.gf), T(r.relF), T(r.nf,{b:1,c:GOLD}), T(wF[r.name]?money(wF[r.name]):"$0",{c:wF[r.name]?GRN:MUT,b:1})]));
+    tbl("BACK 9  ·  "+money(res.potB), ["RK","PLAYER","GROSS","STR","NET","PAYOUT"], w6,
+      res.back.map(r=>[T((r.tied?"T":"")+r.rank), T(r.name,{b:1}), T(r.gb), T(r.relB), T(r.nb,{b:1,c:GOLD}), T(wB[r.name]?money(wB[r.name]):"$0",{c:wB[r.name]?GRN:MUT,b:1})]));
+    tbl("TOTAL NET  ·  "+money(res.pot1)+" / "+money(res.pot2), ["RK","PLAYER","GROSS","STR","NET","PAYOUT"], w6,
+      res.tot.map(r=>[T((r.tied?"T":"")+r.rank), T(r.name,{b:1}), T(r.gt), T(r.relF+"/"+r.relB), T(r.nt,{b:1,c:GOLD}), T(wT[r.name]?money(wT[r.name]):"$0",{c:wT[r.name]?GRN:MUT,b:1})]));
+    if(res.tieNote){
+      ctx.fillStyle=AMB; ctx.font="italic 21px Arial"; ctx.textAlign="center";
+      ctx.fillText(res.tieNote.replace(/&divide;/g,"÷"), W/2, y); y+=44;
+    }
+    tbl("FINAL SUMMARY", ["PLAYER","F","B","TOT","STR","NET","WON","+/−"], [240,90,90,110,130,110,130,100],
+      res.rows.slice().sort((a,b)=>res.pay[b.name]-res.pay[a.name]).map(r=>{
+        const wn=res.pay[r.name], net=wn-res.bet;
+        return [T(r.name,{b:1}), T(r.gf), T(r.gb), T(r.gt), T(r.relF+"/"+r.relB), T(r.nt,{b:1,c:GOLD}),
+          T(wn?money(wn):"$0",{c:wn?GRN:MUT,b:1}), T((net>=0?"+":"−")+money(Math.abs(net)).slice(1),{c:net>0?GRN:net<0?RED:MUT})];
+      }));
   }
-  tbl("FINAL SUMMARY", ["PLAYER","F","B","TOT","STR","NET","WON","+/−"], [240,90,90,110,130,110,130,100],
-    res.rows.slice().sort((a,b)=>res.pay[b.name]-res.pay[a.name]).map(r=>{
-      const wn=res.pay[r.name], net=wn-res.bet;
-      return [T(r.name,{b:1}), T(r.gf), T(r.gb), T(r.gt), T(r.relF+"/"+r.relB), T(r.nt,{b:1,c:GOLD}),
-        T(wn?money(wn):"$0",{c:wn?GRN:MUT,b:1}), T((net>=0?"+":"−")+money(Math.abs(net)).slice(1),{c:net>0?GRN:net<0?RED:MUT})];
-    }));
-  // funny
-  ctx.fillStyle=CREAM; ctx.font="italic 26px Georgia"; ctx.textAlign="center";
-  funnyLines.forEach(l=>{ ctx.fillText(l, W/2, y+26); y+=34; });
-  y+=30;
+  if(res.tracking.length){
+    tbl("SCORE ONLY  ·  NOT IN THE POT", ["PLAYER","FRONT","BACK","TOTAL","ROUNDS","STATUS"], [280,130,130,140,150,170],
+      res.tracking.map(t=>[T(t.name,{b:1}), T(t.gf), T(t.gb), T(t.gt,{b:1,c:GOLD}),
+        T(t.qualified? t.after : t.after+" of 10"),
+        T(t.qualified? "sat out" : t.need? t.need+" more" : "QUALIFIED!", {c:t.qualified? MUT : t.need? AMB:GRN, b:1})]));
+    ctx.fillStyle=MUT; ctx.font="italic 20px Arial"; ctx.textAlign="center";
+    ctx.fillText("These rounds count toward qualification — no buy-in, no payout.", W/2, y); y+=34;
+  }
+  if(res.gameOn){
+    ctx.fillStyle=CREAM; ctx.font="italic 26px Georgia"; ctx.textAlign="center";
+    funnyLines.forEach(l=>{ ctx.fillText(l, W/2, y+26); y+=34; });
+    y+=30;
+  }
   tbl("STROKES FOR NEXT GAME", ["PLAYER","RNDS","NEW AVG","NEW STR","WAS","MOVE"], [280,120,180,180,140,100],
     meta._next.map(x=>[T(x.name,{b:1}), T(x.n), T(fmt2(x.avg),{c:GOLD,b:1}), T(x.ns.f+" / "+x.ns.b,{b:1}), T(x.ws? x.ws.f+" / "+x.ws.b:"—"),
       T(x.mv<0?"▼ "+x.mv : x.mv>0?"▲ +"+x.mv:"—",{c:x.mv<0?RED:x.mv>0?AMB:MUT,b:1})]));
@@ -914,16 +1280,29 @@ function buildXlsx(){
 }
 
 /* ================= HISTORY ================= */
+/* Rounds entered in the app have per-nine scores; Excel-seeded ones only have totals. */
+function roundEntries(r){
+  const nb = new Set(r.noBet||[]);
+  const es = Object.entries(r.scores).filter(([,s])=>typeof s==="object")
+    .map(([name,s])=>({name, f:s.f, b:s.b, noBet:nb.has(name)}));
+  for(const [name,g] of Object.entries(r.guests||{})) es.push({name, f:g.f, b:g.b, guest:true, s18:g.s18});
+  return es;
+}
 function renderHistory(){
   const list = document.getElementById("hist-list");
   const items = state.rounds.map((r,i)=>({r,i})).reverse();
+  const adm = isAdmin();
   list.innerHTML = items.map(({r,i})=>{
-    const names = Object.keys(r.scores);
-    const hasFB = names.some(n=>typeof r.scores[n]==="object");
+    const nMembers = Object.keys(r.scores).length, nGuests = Object.keys(r.guests||{}).length;
+    const nTrack = (r.noBet||[]).length;
+    const hasFB = Object.values(r.scores).some(s=>typeof s==="object");
     return `<div class="hist-item" data-i="${i}">
       <div><div class="d">${usDate(r.date)}${r.course? " · "+r.course:""}</div>
-      <div class="m">${names.length} players${hasFB? " · payouts available":" · totals only (Excel import)"}</div></div>
-      <div style="display:flex;gap:6px">${hasFB?`<button class="btn sm ghost" data-view="${i}">View</button>`:""}${isAdmin()?`<button class="btn sm danger" data-del="${i}">✕</button>`:""}</div>
+      <div class="m">${nMembers} players${nGuests? " + "+nGuests+" guest":""}${nTrack? " · "+nTrack+" score-only":""}${hasFB? " · payouts available":" · totals only (Excel import)"}</div></div>
+      <div style="display:flex;gap:6px">
+        ${hasFB?`<button class="btn sm ghost" data-view="${i}">View</button>`:""}
+        ${hasFB&&adm?`<button class="btn sm ghost" data-edit="${i}">✏️</button>`:""}
+        ${adm?`<button class="btn sm danger" data-del="${i}">✕</button>`:""}</div>
     </div>`;
   }).join("") || `<div class="note">No rounds yet.</div>`;
   list.querySelectorAll("[data-del]").forEach(b=>b.onclick=(ev)=>{
@@ -931,15 +1310,202 @@ function renderHistory(){
     if(!isAdmin()){ toast("Admin only — unlock in the Data tab"); return; }
     const i=+b.dataset.del;
     if(confirm(`Delete round ${usDate(state.rounds[i].date)}? This changes rolling averages.`)){
+      snapshot(`before deleting ${usDate(state.rounds[i].date)}`);
       state.rounds.splice(i,1); save(); renderAll(); toast("Round deleted");
     }
   });
   list.querySelectorAll("[data-view]").forEach(b=>b.onclick=(ev)=>{
     ev.stopPropagation();
     const i=+b.dataset.view, r=state.rounds[i];
-    const entries = Object.entries(r.scores).filter(([,s])=>typeof s==="object").map(([name,s])=>({name,f:s.f,b:s.b}));
-    showResults({date:r.date, course:r.course, bet:r.bet||20, harder:r.harder||"front", entries, _id:i}, state.rounds.slice(0,i), false);
+    showResults({date:r.date, course:r.course, bet:r.bet||20, harder:r.harder||"front",
+                 entries:roundEntries(r), _id:i}, state.rounds.slice(0,i), false);
   });
+  list.querySelectorAll("[data-edit]").forEach(b=>b.onclick=(ev)=>{ ev.stopPropagation(); startEdit(+b.dataset.edit); });
+}
+/* ---- edit an existing round ---- */
+function startEdit(i){
+  if(!isAdmin()){ toast("Admin only — unlock in the Data tab"); return; }
+  const r = state.rounds[i];
+  editIndex = i;
+  document.getElementById("r-date").value = r.date;
+  document.getElementById("r-course").value = r.course || "";
+  document.getElementById("r-bet").value = r.bet || 20;
+  setHarder(r.harder || "front");
+  selected = new Set(Object.keys(r.scores).filter(n=>typeof r.scores[n]==="object"));
+  noBetSet = new Set(r.noBet||[]);
+  guestList = Object.entries(r.guests||{}).map(([name,g])=>({name, s18:g.s18||0}));
+  renderRound();
+  for(const [name,s] of Object.entries(r.scores)){
+    if(typeof s!=="object") continue;
+    const f=document.getElementById(`gf-${cssId(name)}`), b=document.getElementById(`gb-${cssId(name)}`);
+    if(f) f.value=s.f; if(b) b.value=s.b;
+  }
+  for(const [name,g] of Object.entries(r.guests||{})){
+    const k="guest_"+cssId(name);
+    const f=document.getElementById(`gf-${k}`), b=document.getElementById(`gb-${k}`);
+    if(f) f.value=g.f; if(b) b.value=g.b;
+  }
+  renderGrid();
+  switchView("round");
+  toast("Editing — change what you need, then Recalculate");
+}
+function cancelEdit(){
+  editIndex = null; selected = new Set(); guestList = []; noBetSet = new Set();
+  document.getElementById("r-course").value = "";
+  document.getElementById("r-date").value = new Date().toISOString().slice(0,10);
+  document.querySelectorAll("#r-grid input").forEach(i=>i.value="");
+  renderRound();
+}
+
+/* ================= STATS / MONEY ================= */
+function moneyStats(year){
+  const acc = {};
+  for(const r of state.rounds){
+    if(!r.payouts) continue;
+    if(year!=="all" && r.date.slice(0,4)!==year) continue;
+    const bet = r.bet || 20;
+    for(const [n,w] of Object.entries(r.payouts)){
+      acc[n] = acc[n] || { name:n, rounds:0, won:0, paid:0, firsts:0 };
+      acc[n].rounds++; acc[n].won += w; acc[n].paid += bet;
+    }
+    if(r.tops) r.tops.forEach(n=>{ if(acc[n]) acc[n].firsts++; });
+  }
+  const rows = Object.values(acc);
+  rows.forEach(x=>x.net = x.won - x.paid);
+  rows.sort((a,b)=>b.net-a.net);
+  return rows;
+}
+function payoutYears(){
+  const ys = new Set();
+  state.rounds.forEach(r=>{ if(r.payouts) ys.add(r.date.slice(0,4)); });
+  return [...ys].sort().reverse();
+}
+let statYear = "all";
+function renderStats(){
+  const years = payoutYears();
+  document.getElementById("st-years").innerHTML =
+    [`<button class="chip ${statYear==="all"?"on":""}" data-y="all">All time</button>`]
+    .concat(years.map(y=>`<button class="chip ${statYear===y?"on":""}" data-y="${y}">${y}</button>`)).join("");
+  document.querySelectorAll("#st-years .chip").forEach(c=>c.onclick=()=>{ statYear=c.dataset.y; renderStats(); });
+  const rows = moneyStats(statYear);
+  const nRounds = state.rounds.filter(r=>r.payouts && (statYear==="all"||r.date.slice(0,4)===statYear)).length;
+  const pot = rows.reduce((a,x)=>a+x.paid,0);
+  const big = rows[0], worst = rows[rows.length-1];
+  document.getElementById("st-stats").innerHTML = `
+    <div class="stat"><div class="lbl">Rounds</div><div class="val">${nRounds}</div><div class="who">with payouts</div></div>
+    <div class="stat"><div class="lbl">Total Pot</div><div class="val">${money(pot)}</div><div class="who">wagered</div></div>
+    <div class="stat"><div class="lbl">Top Earner</div><div class="val">${big? signedMoney(big.net):"—"}</div><div class="who">${big? big.name:""}</div></div>
+    <div class="stat"><div class="lbl">Biggest Donor</div><div class="val">${worst&&worst!==big? signedMoney(worst.net):"—"}</div><div class="who">${worst&&worst!==big? worst.name:""}</div></div>`;
+  let h = `<tr><th>#</th><th style="text-align:left">Player</th><th>Rnds</th><th>Won</th><th>Paid In</th><th>Net</th></tr>`;
+  rows.forEach((x,i)=>{
+    h += `<tr class="tap" data-player="${x.name}"><td>${i+1}</td><td class="pl">${x.name}</td><td>${x.rounds}</td>
+      <td class="money">${money(x.won)}</td><td class="zero">${money(x.paid)}</td>
+      <td class="${x.net>0?"money-pos":x.net<0?"money-neg":"zero"}">${signedMoney(x.net)}</td></tr>`;
+  });
+  document.getElementById("st-table").innerHTML = rows.length? h : `<tr><td class="note">No payout history yet — it starts building the first time you finalize a round in the app.</td></tr>`;
+  document.querySelectorAll("#st-table tr[data-player]").forEach(tr=>tr.onclick=()=>showProfile(tr.dataset.player));
+  document.getElementById("st-note").textContent = rows.length
+    ? "Only rounds finalized in the app carry payout data. The 230 rounds imported from the Excel workbook are scores only, so they aren't counted here."
+    : "";
+  // fun leaderboards
+  const elig = state.players.map(p=>playerStats(p,state.rounds)).filter(s=>s.n>=10);
+  const best = [];
+  state.players.forEach(p=>{
+    const sc = scoresFor(p, state.rounds);
+    if(sc.length) best.push({name:p, low:Math.min(...sc), n:sc.length});
+  });
+  best.sort((a,b)=>a.low-b.low);
+  const hot = elig.map(s=>({s, t:trendOf(s.name,state.rounds)})).filter(x=>x.t).sort((a,b)=>a.t.d-b.t.d);
+  document.getElementById("st-boards").innerHTML = `
+    <div style="margin-bottom:10px"><b style="color:var(--gold)">🏌️ Lowest Round Ever</b>
+      <div class="note">${best.slice(0,5).map((x,i)=>`${i+1}. ${x.name} — <b>${x.low}</b>`).join("<br>")||"—"}</div></div>
+    <div><b style="color:var(--gold)">🔥 Hottest Form</b>
+      <div class="note">${hot.slice(0,5).map((x,i)=>`${i+1}. ${x.s.name} — last 5 are ${Math.abs(x.t.d).toFixed(1)} ${x.t.d<0?"better":"worse"} than his ${fmt2(x.s.avg)}`).join("<br>")||"—"}</div></div>`;
+}
+
+/* ================= PLAYER PROFILE ================= */
+let profileBack = "card";
+function showProfile(name){
+  profileBack = document.querySelector(".view.active").id.replace("view-","");
+  renderProfile(name);
+  switchView("profile");
+}
+function renderProfile(name){
+  const s = playerStats(name, state.rounds);
+  const sc = scoresFor(name, state.rounds);
+  const card = cardData();
+  const rank = card.elig.findIndex(x=>x.name===name);
+  const [hName,hCls] = s.avg!=null? hedge(s.avg) : ["—",""];
+  const t = trendOf(name, state.rounds);
+  document.getElementById("pf-head").innerHTML = `
+    <div class="pn">${name}</div>
+    <div class="pa">${s.avg!=null? fmt2(s.avg):"—"}</div>
+    <div class="ps">${s.n>=10? `Rank #${rank+1} of ${card.elig.length} · ` : `${10-s.n} more rounds to qualify · `}
+      Strokes <b style="color:var(--cream)">${s.strokes? s.strokes.f+" / "+s.strokes.b : "—"}</b></div>
+    <div style="margin-top:8px">${s.avg!=null? `<span class="badge ${hCls}">${hName}</span>`:""}
+      ${t? `<span class="badge" style="background:${t.dir==="hot"?"#1E5A2A":t.dir==="cold"?"#5A4415":"#333"};color:#fff">${t.dir==="hot"?"↘ TRENDING BETTER":t.dir==="cold"?"↗ TRENDING WORSE":"→ STEADY"}</span>`:""}</div>`;
+  const money$ = moneyStats("all").find(x=>x.name===name);
+  const last5 = sc.length>=5? (sc.slice(-5).reduce((a,b)=>a+b,0)/5) : null;
+  document.getElementById("pf-mini").innerHTML = `
+    <div class="m"><div class="l">Rounds</div><div class="v">${s.n}</div></div>
+    <div class="m"><div class="l">Best</div><div class="v">${sc.length? Math.min(...sc):"—"}</div></div>
+    <div class="m"><div class="l">Worst</div><div class="v">${sc.length? Math.max(...sc):"—"}</div></div>
+    <div class="m"><div class="l">Last 5 Avg</div><div class="v">${last5? last5.toFixed(1):"—"}</div></div>
+    <div class="m"><div class="l">Career Avg</div><div class="v">${sc.length? (sc.reduce((a,b)=>a+b,0)/sc.length).toFixed(1):"—"}</div></div>
+    <div class="m"><div class="l">Net Money</div><div class="v sm ${money$&&money$.net>0?"money-pos":money$&&money$.net<0?"money-neg":""}">${money$? signedMoney(money$.net):"—"}</div></div>`;
+  drawSpark(sc.slice(-20), s.avg);
+  document.getElementById("pf-sparknote").textContent = sc.length
+    ? `Last ${Math.min(20,sc.length)} rounds · gold line = current rolling average (${fmt2(s.avg)})` : "No rounds yet";
+  // by course
+  const byC = {};
+  for(const r of state.rounds){
+    if(!r.course || r.scores[name]==null) continue;
+    byC[r.course] = byC[r.course] || {n:0, sum:0, low:999};
+    const v = totalOf(r.scores[name]);
+    byC[r.course].n++; byC[r.course].sum += v; byC[r.course].low = Math.min(byC[r.course].low, v);
+  }
+  const cs = Object.entries(byC).sort((a,b)=>(a[1].sum/a[1].n)-(b[1].sum/b[1].n));
+  document.getElementById("pf-courses").innerHTML = cs.length
+    ? `<tr><th style="text-align:left">Course</th><th>Rnds</th><th>Avg</th><th>Best</th></tr>`+
+      cs.map(([c,v])=>`<tr><td class="pl">${c}</td><td>${v.n}</td><td class="avg">${(v.sum/v.n).toFixed(1)}</td><td>${v.low}</td></tr>`).join("")
+    : `<tr><td class="note">No course data yet — rounds entered in the app record the course.</td></tr>`;
+  // recent rounds
+  const recent = state.rounds.filter(r=>r.scores[name]!=null).slice(-10).reverse();
+  document.getElementById("pf-recent").innerHTML =
+    `<tr><th style="text-align:left">Date</th><th>Course</th><th>F</th><th>B</th><th>Total</th></tr>`+
+    (recent.map(r=>{
+      const v = r.scores[name], isObj = typeof v === "object";
+      return `<tr><td class="pl">${usDate(r.date)}</td><td>${r.course||"—"}</td>
+        <td>${isObj? v.f:"—"}</td><td>${isObj? v.b:"—"}</td><td class="avg">${totalOf(v)}</td></tr>`;
+    }).join("") || `<tr><td class="note">None</td></tr>`);
+}
+function drawSpark(vals, avg){
+  const cv = document.getElementById("pf-spark");
+  const ctx = cv.getContext("2d");
+  const W=cv.width, H=cv.height, PAD=30;
+  ctx.clearRect(0,0,W,H);
+  if(!vals.length) return;
+  const lo = Math.min(...vals, avg||Infinity)-2, hi = Math.max(...vals, avg||-Infinity)+2;
+  const x = i => PAD + (W-2*PAD) * (vals.length===1? .5 : i/(vals.length-1));
+  const y = v => H-PAD - (H-2*PAD) * ((v-lo)/(hi-lo||1));
+  // average line
+  if(avg!=null){
+    ctx.strokeStyle="#C9A84C"; ctx.lineWidth=2; ctx.setLineDash([6,5]);
+    ctx.beginPath(); ctx.moveTo(PAD,y(avg)); ctx.lineTo(W-PAD,y(avg)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  // score line
+  ctx.strokeStyle="#7FD98A"; ctx.lineWidth=3; ctx.beginPath();
+  vals.forEach((v,i)=>{ i? ctx.lineTo(x(i),y(v)) : ctx.moveTo(x(i),y(v)); });
+  ctx.stroke();
+  // dots + endpoint labels
+  vals.forEach((v,i)=>{
+    ctx.fillStyle = (avg!=null && v<=avg)? "#7FD98A" : "#E05C4B";
+    ctx.beginPath(); ctx.arc(x(i),y(v),4,0,7); ctx.fill();
+  });
+  ctx.fillStyle="#F0EAD8"; ctx.font="16px Arial"; ctx.textAlign="center";
+  ctx.fillText(vals[0], x(0), y(vals[0])-12);
+  if(vals.length>1) ctx.fillText(vals[vals.length-1], x(vals.length-1), y(vals[vals.length-1])-12);
 }
 
 /* ================= SETTINGS ================= */
@@ -954,8 +1520,31 @@ function renderSettings(){
   }
   document.getElementById("adm-lock").style.display = isAdmin()&&state.adminHash? "flex":"none";
   document.getElementById("adm-unlock").style.display = isAdmin()? "none":"flex";
+  document.getElementById("sw-round").classList.toggle("on", !!state.settings.roundPayouts);
+  document.getElementById("sw-autobk").classList.toggle("on", !!state.settings.autoBackup);
+  // automatic backups
+  const snaps = snapshots().slice().reverse();
+  document.getElementById("s-snaps").innerHTML = snaps.length
+    ? snaps.map((s,i)=>{
+        let n = "?"; try{ n = (JSON.parse(s.data).rounds||[]).length; }catch(e){}
+        const d = new Date(s.ts);
+        return `<div class="snap"><div><b>${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</b>
+          <div style="color:var(--muted)">${n} rounds · ${s.label||"auto"}</div></div>
+          <button class="btn sm ghost" data-restore="${snaps.length-1-i}">Restore</button></div>`;
+      }).join("")
+    : `<div class="note">No backups yet — the first one is taken the next time you save a round.</div>`;
+  document.querySelectorAll("[data-restore]").forEach(b=>b.onclick=()=>{
+    if(!isAdmin()){ toast("Admin only — unlock above first"); return; }
+    const arr = snapshots(), s = arr[+b.dataset.restore];
+    if(!s) return;
+    let n="?"; try{ n=(JSON.parse(s.data).rounds||[]).length; }catch(e){}
+    if(!confirm(`Restore the backup from ${new Date(s.ts).toLocaleString()} (${n} rounds)? Your current data is snapshotted first, so this is reversible.`)) return;
+    snapshot("before restore");
+    try{ state = migrate(JSON.parse(s.data)); save(); renderAll(); toast("Backup restored ✅"); }
+    catch(e){ toast("That backup could not be read"); }
+  });
   document.getElementById("s-info").textContent =
-    `${state.players.length} players · ${state.rounds.length} rounds · seeded from Tomodachi Average Scores R5.xlsx (through ${state.rounds.length? usDate(state.rounds[state.rounds.length-1].date):"—"}) · data stored on this device`;
+    `${state.players.length} players · ${state.rounds.length} rounds · ${Object.keys(state.courses||{}).length} courses · workbook ${SEED_VERSION} (through ${state.rounds.length? usDate(state.rounds[state.rounds.length-1].date):"—"}) · data stored on this device`;
 }
 
 /* ================= HELPERS / WIRING ================= */
@@ -967,37 +1556,59 @@ function switchView(v){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
   window.scrollTo(0,0);
 }
-document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ switchView(b.dataset.v); if(b.dataset.v==="round") renderRound(); });
-function renderAll(){ renderCard(); renderHistory(); renderSettings(); }
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
+  switchView(b.dataset.v);
+  if(b.dataset.v==="round") renderRound();
+  if(b.dataset.v==="stats") renderStats();
+});
+function renderAll(){ renderCard(); renderHistory(); renderSettings(); renderStats(); }
 
 document.getElementById("r-calc").onclick = ()=>{
-  if(selected.size<2){ toast("Select at least 2 players"); return; }
+  const people = participants();
+  if(!people.length){ toast("Select at least one player"); return; }
   const entries=[];
-  for(const p of selected){
-    const f=+document.getElementById(`gf-${cssId(p)}`).value, b=+document.getElementById(`gb-${cssId(p)}`).value;
-    if(!f||!b){ toast(`Missing scores for ${p}`); return; }
-    entries.push({name:p,f,b});
+  for(const p of people){
+    const f=+document.getElementById(`gf-${p.key}`).value, b=+document.getElementById(`gb-${p.key}`).value;
+    if(!f||!b){ toast(`Missing scores for ${p.name}`); return; }
+    entries.push(p.guest? {name:p.name,f,b,guest:true,s18:p.s18} : {name:p.name,f,b,noBet:p.noBet});
   }
+  const { hard, soft } = validateEntries(entries);
+  if(hard.length){ alert("These scores can't be right:\n\n• "+hard.join("\n• ")+"\n\nFix them and try again."); return; }
+  if(soft.length && !confirm("Double-check these before we lock them in:\n\n• "+soft.join("\n• ")+"\n\nAre these correct?")) return;
   const meta = { date: document.getElementById("r-date").value, course: document.getElementById("r-course").value.trim(),
                  bet: +document.getElementById("r-bet").value||20, harder: harderSide, entries };
   pendingRound = meta;
-  showResults(meta, state.rounds, true);
+  showResults(meta, preRoundsNow(), true);
 };
 document.getElementById("res-save").onclick = ()=>{
   if(!pendingRound) return;
   if(!isAdmin()){ toast("Admin only — unlock in the Data tab"); return; }
-  const m = pendingRound;
-  state.rounds.push({ date:m.date, course:m.course||undefined, bet:m.bet, harder:m.harder,
-    scores:Object.fromEntries(m.entries.map(e=>[e.name,{f:e.f,b:e.b}])) });
+  const m = pendingRound, res = currentRes;
+  snapshot(editIndex!=null? `before editing ${usDate(m.date)}` : `before saving ${usDate(m.date)}`);
+  const rec = { date:m.date, course:m.course||undefined, bet:m.bet, harder:m.harder,
+    scores:Object.fromEntries(m.entries.filter(e=>!e.guest).map(e=>[e.name,{f:e.f,b:e.b}])),
+    payouts:{...res.pay},
+    tops:res.tot.filter(r=>r.rank===1).map(r=>r.name) };
+  const gs = m.entries.filter(e=>e.guest);
+  if(gs.length) rec.guests = Object.fromEntries(gs.map(e=>[e.name,{f:e.f,b:e.b,s18:e.s18}]));
+  const nb = m.entries.filter(e=>e.noBet).map(e=>e.name);
+  if(nb.length) rec.noBet = nb;
+  if(editIndex!=null) state.rounds[editIndex] = rec; else state.rounds.push(rec);
   state.rounds.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
-  save(); pendingRound=null; selected=new Set();
+  // remember this course's harder nine for next time
+  if(m.course){ state.courses = state.courses||{}; state.courses[m.course] = { harder:m.harder }; }
+  save();
+  const wasEdit = editIndex!=null;
+  pendingRound=null; editIndex=null; selected=new Set(); guestList=[]; noBetSet=new Set();
   document.querySelectorAll("#r-grid input").forEach(i=>i.value="");
+  document.getElementById("r-course").value="";
   renderAll();
+  if(state.settings.autoBackup) downloadBackup();
   // stay on the results screen so the image/WhatsApp exports are one tap away
   document.getElementById("res-savebar").style.display="none";
   document.getElementById("res-backbar").style.display="flex";
   document.getElementById("res-back").textContent="← Done (view updated Card)";
-  toast("Round saved — card updated ✅ Now share the image!");
+  toast(wasEdit? "Round updated — card recalculated ✅" : "Round saved — card updated ✅ Now share the image!");
 };
 function sharePng(cv, filename, title){
   cv.toBlob(async blob=>{
@@ -1047,11 +1658,12 @@ document.getElementById("s-add").onclick = ()=>{
   state.players.push(n); save(); document.getElementById("s-newname").value="";
   renderAll(); toast(`${n} added to roster`);
 };
-document.getElementById("s-export").onclick = ()=>{
+function downloadBackup(){
   const blob = new Blob([JSON.stringify(state,null,1)],{type:"application/json"});
   const a = document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download = `tomodachi-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
-};
+}
+document.getElementById("s-export").onclick = downloadBackup;
 document.getElementById("s-import").onclick = ()=>{
   if(!isAdmin()){ toast("Admin only — unlock above first"); return; }
   document.getElementById("s-file").click();
@@ -1062,21 +1674,105 @@ document.getElementById("s-file").onchange = (ev)=>{
   rd.onload = ()=>{ try{
     const s = JSON.parse(rd.result);
     if(!s.players||!s.rounds) throw 0;
-    state=s; save(); renderAll(); toast("Backup imported ✅");
+    snapshot("before import");
+    state=migrate(s); save(); renderAll(); toast("Backup imported ✅");
   }catch(e){ toast("Invalid backup file"); } };
   rd.readAsText(f);
+  ev.target.value = "";
 };
 document.getElementById("s-reset").onclick = ()=>{
   if(!isAdmin()){ toast("Admin only — unlock above first"); return; }
   if(confirm("Reset ALL data back to the R5 Excel seed? Rounds entered in the app will be lost.")){
+    snapshot("before reset to R5 seed");
     const keepPin = state.adminHash;
     state = seedState(); state.adminHash = keepPin;
     save(); renderAll(); toast("Reset to R5 seed");
   }
 };
+/* ---- options toggles ---- */
+function bindToggle(id, key, msg){
+  document.getElementById(id).onclick = ()=>{
+    if(!isAdmin()){ toast("Admin only — unlock above first"); return; }
+    state.settings[key] = !state.settings[key];
+    save(); renderSettings();
+    toast(`${msg}: ${state.settings[key]? "ON":"OFF"}`);
+  };
+}
+bindToggle("sw-round","roundPayouts","Whole-dollar payouts");
+bindToggle("sw-autobk","autoBackup","Auto-download backup");
+/* ---- new-round helpers ---- */
+document.getElementById("r-course").addEventListener("input", ()=>{
+  const c = document.getElementById("r-course").value.trim();
+  const known = state.courses && state.courses[c];
+  if(known) setHarder(known.harder);
+  renderRound();
+});
+document.getElementById("r-samegroup").onclick = ()=>{
+  const prev = [...state.rounds].reverse().find(r=>Object.keys(r.scores).length);
+  if(!prev){ toast("No previous round to copy"); return; }
+  selected = new Set(Object.keys(prev.scores).filter(n=>state.players.includes(n)));
+  const pre = preRoundsNow();
+  noBetSet = new Set([...selected].filter(p=>playerStats(p, pre).n < 10));
+  renderRound();
+  toast(`${selected.size} players from ${usDate(prev.date)}`);
+};
+document.getElementById("r-clearsel").onclick = ()=>{
+  selected = new Set(); guestList = []; noBetSet = new Set();
+  document.querySelectorAll("#r-grid input").forEach(i=>i.value="");
+  renderRound();
+};
+document.getElementById("r-addguest").onclick = ()=>{
+  const n = (prompt("Guest's name:")||"").trim();
+  if(!n) return;
+  if(state.players.includes(n)){ toast(`${n} is already on the roster — pick him above instead`); return; }
+  if(guestList.some(g=>g.name===n)){ toast("That guest is already added"); return; }
+  const s = prompt(`How many strokes does ${n} get for 18 holes?`, "12");
+  if(s==null) return;
+  guestList.push({ name:n, s18: Math.max(0, Math.round(+s)||0) });
+  renderRound();
+};
+document.getElementById("r-addmember").onclick = ()=>{
+  if(!isAdmin()){ toast("Admin only"); return; }
+  const n = (prompt("New member's name (joins the roster permanently):")||"").trim();
+  if(!n) return;
+  if(state.players.includes(n)){
+    if(!selected.has(n)){ selected.add(n); noBetSet.add(n); renderRound(); }
+    toast(`${n} is already on the roster — selected him`); return;
+  }
+  state.players.push(n); save();
+  selected.add(n); noBetSet.add(n);   // brand new: 0 rounds, so score-only
+  renderRound(); renderAll();
+  toast(`${n} added — score only until he hits 10 rounds`);
+};
+document.getElementById("r-canceledit").onclick = ()=>{ cancelEdit(); toast("Edit cancelled"); };
+document.getElementById("pf-back").onclick = ()=>switchView(profileBack);
 
 renderAll();
-if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+if(seedRefreshNote) setTimeout(()=>toast("📗 " + seedRefreshNote), 700);
+
+/* ---- service worker + update banner ---- */
+if("serviceWorker" in navigator){
+  let waitingWorker = null, reloading = false;
+  const showUpdate = w =>{ waitingWorker = w; document.getElementById("updbar").style.display="flex"; };
+  navigator.serviceWorker.register("sw.js").then(reg=>{
+    if(reg.waiting && navigator.serviceWorker.controller) showUpdate(reg.waiting);
+    reg.addEventListener("updatefound", ()=>{
+      const nw = reg.installing;
+      if(!nw) return;
+      nw.addEventListener("statechange", ()=>{
+        if(nw.state==="installed" && navigator.serviceWorker.controller) showUpdate(nw);
+      });
+    });
+  }).catch(()=>{});
+  navigator.serviceWorker.addEventListener("controllerchange", ()=>{
+    if(reloading) return; reloading = true; location.reload();
+  });
+  document.getElementById("upd-go").onclick = ()=>{
+    document.getElementById("updbar").style.display="none";
+    if(waitingWorker) waitingWorker.postMessage("SKIP_WAITING");
+    else location.reload();
+  };
+}
 </script>
 </body>
 </html>
