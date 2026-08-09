@@ -139,6 +139,9 @@ canvas.spark{width:100%;height:130px;display:block;border-radius:8px;background:
 .mp-track{background:#12304A;color:#8FC7F0;border-color:#3C7FB5}
 .trackrow td{opacity:.92}
 .qual{display:inline-block;background:#12304A;color:#8FC7F0;font-size:.58rem;padding:1px 6px;border-radius:8px;font-family:Arial,sans-serif;margin-left:5px}
+.known{display:block;font-size:.62rem;color:#8FC7F0;font-family:Arial,sans-serif;margin-top:1px}
+.tot-bad{color:var(--red) !important}
+.tot-kept{color:var(--muted) !important;font-style:italic}
 </style>
 </head>
 <body>
@@ -695,6 +698,7 @@ let noBetSet = new Set();  // members whose score is recorded but who sit out th
 let harderSide = "front";
 let guestList = [];      // [{name, s18}]
 let editIndex = null;    // index into state.rounds when editing an existing round
+let knownTotals = {};    // name -> 18-hole total already on record for the round being edited
 function setHarder(h){
   harderSide = h;
   document.querySelectorAll("#r-harder .chip").forEach(x=>x.classList.toggle("on", x.dataset.h===harderSide));
@@ -775,6 +779,7 @@ function participants(){
   const list = [...selected].map(p=>{
     const s = playerStats(p, pre);
     return { name:p, key:cssId(p), guest:false, n:s.n, noBet:noBetSet.has(p),
+             known: knownTotals[p]!=null? knownTotals[p] : null,
              str: s.strokes? orient(s.strokes, harderSide) : null };
   });
   guestList.forEach(g=>list.push({ name:g.name, key:"guest_"+cssId(g.name), guest:true, s18:g.s18, noBet:false,
@@ -795,7 +800,8 @@ function renderGrid(){
     const pill = p.guest ? ""
       : `<span class="modepill ${p.noBet?"mp-track":"mp-bet"}" data-mode="${p.name}">${p.noBet?"📊 SCORE ONLY":"💰 IN THE GAME"}</span>`;
     const idF=`gf-${p.key}`, idB=`gb-${p.key}`;
-    h += `<div class="nm">${p.name}${p.guest?'<span class="gtag">GUEST</span>':""}<span class="st">${sub}</span>${pill}</div>
+    const kn = p.known!=null? `<span class="known">on record: ${p.known}</span>` : "";
+    h += `<div class="nm">${p.name}${p.guest?'<span class="gtag">GUEST</span>':""}<span class="st">${sub}</span>${kn}${pill}</div>
       <div><input type="number" inputmode="numeric" id="${idF}" value="${prev[idF]||""}" placeholder="—"></div>
       <div><input type="number" inputmode="numeric" id="${idB}" value="${prev[idB]||""}" placeholder="—"></div>
       <div class="tot" id="tt-${p.key}">—</div>`;
@@ -809,7 +815,12 @@ function renderGrid(){
   const sync = ()=>{
     for(const p of people){
       const f=+document.getElementById(`gf-${p.key}`).value||0, b=+document.getElementById(`gb-${p.key}`).value||0;
-      document.getElementById(`tt-${p.key}`).textContent = (f&&b)? f+b : "—";
+      const cell = document.getElementById(`tt-${p.key}`);
+      const t = (f&&b)? f+b : null;
+      cell.textContent = t!=null? t : (p.known!=null? p.known : "—");
+      // flag a split that doesn't add up to the total already on record
+      cell.classList.toggle("tot-bad", t!=null && p.known!=null && t!==p.known);
+      cell.classList.toggle("tot-kept", t==null && p.known!=null);
     }
   };
   grid.querySelectorAll("input").forEach(i=>i.oninput=sync);
@@ -877,7 +888,8 @@ function showResults(meta, preRounds, savable){
       <div class="cell"><div class="l">1st 35% / 2nd 15%</div><div class="v">${money(res.pot1)} / ${money(res.pot2)}</div></div>
     </div>
     <div class="note">Harder 9: <b>${res.harder==="back"?"Back":"Front"}</b> (bigger stroke split applied there). Baseline (lowest strokes): <b>${res.rows.find(r=>r.relT===0 && r.st===res.base.total)?.name || "—"}</b> at F${res.base.f} / B${res.base.b}. Net = gross − relative strokes per 9.
-    ${res.tracking.length? `<br>📊 ${res.tracking.length} player${res.tracking.length>1?"s":""} recorded scores only and ${res.tracking.length>1?"are":"is"} not in the pot.`:""}</div>
+    ${res.tracking.length? `<br>📊 ${res.tracking.length} player${res.tracking.length>1?"s":""} recorded scores only and ${res.tracking.length>1?"are":"is"} not in the pot.`:""}
+    ${(meta.keepTotals&&meta.keepTotals.length)? `<br>📄 ${meta.keepTotals.length} player${meta.keepTotals.length>1?"s keep their":" keeps his"} existing total, unchanged (no scorecard entered): ${meta.keepTotals.map(k=>k.name+" "+k.total).join(", ")}.`:""}</div>
   </div>
   <h2 class="sec">Front 9</h2>${secTbl(res.front,"nf","gf",res.potF,wF)}
   <h2 class="sec">Back 9</h2>${secTbl(res.back,"nb","gb",res.potB,wB)}
@@ -1301,7 +1313,7 @@ function renderHistory(){
       <div class="m">${nMembers} players${nGuests? " + "+nGuests+" guest":""}${nTrack? " · "+nTrack+" score-only":""}${hasFB? " · payouts available":" · totals only (Excel import)"}</div></div>
       <div style="display:flex;gap:6px">
         ${hasFB?`<button class="btn sm ghost" data-view="${i}">View</button>`:""}
-        ${hasFB&&adm?`<button class="btn sm ghost" data-edit="${i}">✏️</button>`:""}
+        ${adm?`<button class="btn sm ghost" data-edit="${i}">✏️</button>`:""}
         ${adm?`<button class="btn sm danger" data-del="${i}">✕</button>`:""}</div>
     </div>`;
   }).join("") || `<div class="note">No rounds yet.</div>`;
@@ -1331,12 +1343,21 @@ function startEdit(i){
   document.getElementById("r-course").value = r.course || "";
   document.getElementById("r-bet").value = r.bet || 20;
   setHarder(r.harder || "front");
-  selected = new Set(Object.keys(r.scores).filter(n=>typeof r.scores[n]==="object"));
-  noBetSet = new Set(r.noBet||[]);
+  // every player on the round comes along, including ones recorded as a bare 18-hole total
+  selected = new Set(Object.keys(r.scores));
+  knownTotals = {};
+  for(const [name,s] of Object.entries(r.scores)) knownTotals[name] = totalOf(s);
+  if(r.noBet) noBetSet = new Set(r.noBet);
+  else if(r.payouts) noBetSet = new Set();          // round already went through the app; everyone listed was in the pot
+  else {
+    // backfilling a round the app never processed: apply the 10-round rule as it stood that day
+    const pre = state.rounds.slice(0, i);
+    noBetSet = new Set([...selected].filter(p=>playerStats(p, pre).n < 10));
+  }
   guestList = Object.entries(r.guests||{}).map(([name,g])=>({name, s18:g.s18||0}));
   renderRound();
   for(const [name,s] of Object.entries(r.scores)){
-    if(typeof s!=="object") continue;
+    if(typeof s!=="object") continue;   // totals-only players start blank, awaiting the scorecard
     const f=document.getElementById(`gf-${cssId(name)}`), b=document.getElementById(`gb-${cssId(name)}`);
     if(f) f.value=s.f; if(b) b.value=s.b;
   }
@@ -1350,7 +1371,7 @@ function startEdit(i){
   toast("Editing — change what you need, then Recalculate");
 }
 function cancelEdit(){
-  editIndex = null; selected = new Set(); guestList = []; noBetSet = new Set();
+  editIndex = null; selected = new Set(); guestList = []; noBetSet = new Set(); knownTotals = {};
   document.getElementById("r-course").value = "";
   document.getElementById("r-date").value = new Date().toISOString().slice(0,10);
   document.querySelectorAll("#r-grid input").forEach(i=>i.value="");
@@ -1566,17 +1587,42 @@ function renderAll(){ renderCard(); renderHistory(); renderSettings(); renderSta
 document.getElementById("r-calc").onclick = ()=>{
   const people = participants();
   if(!people.length){ toast("Select at least one player"); return; }
-  const entries=[];
+  const date = document.getElementById("r-date").value;
+  // guard against creating a SECOND round on a date that already exists — that would
+  // count those scores twice in every rolling average
+  if(editIndex==null){
+    const dupe = state.rounds.findIndex(r=>r.date===date);
+    if(dupe>=0){
+      const ok = confirm(
+        `A round on ${usDate(date)} is already recorded (${Object.keys(state.rounds[dupe].scores).length} players).\n\n`+
+        `Saving a second round on this date would count those scores TWICE and throw off everyone's average.\n\n`+
+        `To add scorecards to that round, tap Cancel, then go to History → ✏️ on ${usDate(date)}.\n\n`+
+        `Only press OK if you genuinely played two separate rounds that day.`);
+      if(!ok) return;
+    }
+  }
+  const entries=[], keepTotals=[];
   for(const p of people){
     const f=+document.getElementById(`gf-${p.key}`).value, b=+document.getElementById(`gb-${p.key}`).value;
-    if(!f||!b){ toast(`Missing scores for ${p.name}`); return; }
+    if(!f||!b){
+      // editing a round where this player's 18-hole total is already on record and no
+      // scorecard was entered — keep his total untouched and leave him out of the game
+      if(p.known!=null){ keepTotals.push({name:p.name, total:p.known}); continue; }
+      toast(`Missing scores for ${p.name}`); return;
+    }
     entries.push(p.guest? {name:p.name,f,b,guest:true,s18:p.s18} : {name:p.name,f,b,noBet:p.noBet});
   }
+  if(!entries.length){ toast("Enter at least one front/back scorecard"); return; }
   const { hard, soft } = validateEntries(entries);
+  // a split that disagrees with the total already on record changes that player's average
+  for(const e of entries){
+    const k = knownTotals[e.name];
+    if(k!=null && e.f+e.b !== k) soft.push(`${e.name}: ${e.f}+${e.b}=${e.f+e.b}, but ${k} is on record — saving changes his average.`);
+  }
   if(hard.length){ alert("These scores can't be right:\n\n• "+hard.join("\n• ")+"\n\nFix them and try again."); return; }
   if(soft.length && !confirm("Double-check these before we lock them in:\n\n• "+soft.join("\n• ")+"\n\nAre these correct?")) return;
-  const meta = { date: document.getElementById("r-date").value, course: document.getElementById("r-course").value.trim(),
-                 bet: +document.getElementById("r-bet").value||20, harder: harderSide, entries };
+  const meta = { date, course: document.getElementById("r-course").value.trim(),
+                 bet: +document.getElementById("r-bet").value||20, harder: harderSide, entries, keepTotals };
   pendingRound = meta;
   showResults(meta, preRoundsNow(), true);
 };
@@ -1593,13 +1639,15 @@ document.getElementById("res-save").onclick = ()=>{
   if(gs.length) rec.guests = Object.fromEntries(gs.map(e=>[e.name,{f:e.f,b:e.b,s18:e.s18}]));
   const nb = m.entries.filter(e=>e.noBet).map(e=>e.name);
   if(nb.length) rec.noBet = nb;
+  // players whose 18-hole total was already on record and had no scorecard entered
+  for(const k of (m.keepTotals||[])) rec.scores[k.name] = k.total;
   if(editIndex!=null) state.rounds[editIndex] = rec; else state.rounds.push(rec);
   state.rounds.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
   // remember this course's harder nine for next time
   if(m.course){ state.courses = state.courses||{}; state.courses[m.course] = { harder:m.harder }; }
   save();
   const wasEdit = editIndex!=null;
-  pendingRound=null; editIndex=null; selected=new Set(); guestList=[]; noBetSet=new Set();
+  pendingRound=null; editIndex=null; selected=new Set(); guestList=[]; noBetSet=new Set(); knownTotals={};
   document.querySelectorAll("#r-grid input").forEach(i=>i.value="");
   document.getElementById("r-course").value="";
   renderAll();
