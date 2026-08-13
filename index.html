@@ -251,6 +251,7 @@ canvas.spark{width:100%;height:130px;display:block;border-radius:8px;background:
   <div class="note" id="st-note"></div>
   <h2 class="sec">Leaderboards</h2>
   <div class="card-box" id="st-boards"></div>
+  <div class="btnrow"><button class="btn" id="st-img">🖼 Share Money Leaderboard Image</button></div>
 </section>
 
 <!-- ============ PLAYER PROFILE ============ -->
@@ -1210,6 +1211,97 @@ function makeCardImage(){
   return cv;
 }
 
+/* ================= SHAREABLE MONEY LEADERBOARD IMAGE ================= */
+function makeMoneyImage(){
+  const rows = moneyStats(statYear);
+  const { best, hot } = funBoards();
+  const W=1080, P=40, IW=W-2*P;
+  const GOLD="#C9A84C", CREAM="#F0EAD8", BG="#0A1A0D", HDR="#102918", THEAD="#1A3A20",
+        RA="#0D1F10", RB="#132B17", MUT="#8FA391", GRN="#7FD98A", RED="#E05C4B",
+        SILVER="#8A8A8A", BRONZE="#7A4A1A", GRNB="#2E6B3A";
+  const nRounds = state.rounds.filter(r=>r.payouts && (statYear==="all"||r.date.slice(0,4)===statYear)).length;
+  const pot = rows.reduce((a,x)=>a+x.paid,0);
+  const big = rows[0], worst = rows[rows.length-1];
+  const bestN = Math.min(5, best.length), hotN = Math.min(5, hot.length);
+  let H = 250 + 110 + 50 + rows.length*50 + 24 + 40;
+  if(bestN) H += 50 + bestN*32 + 16;
+  if(hotN)  H += 50 + hotN*32 + 16;
+  H += 70;
+  const cv = document.createElement("canvas");
+  cv.width=W; cv.height=H;
+  const ctx = cv.getContext("2d");
+  ctx.fillStyle=BG; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=HDR; ctx.fillRect(14,14,W-28,196);
+  ctx.strokeStyle=GOLD; ctx.lineWidth=4; ctx.strokeRect(10,10,W-20,H-20);
+  ctx.lineWidth=3; ctx.beginPath();
+  ctx.moveTo(30,66); ctx.lineTo(30,30); ctx.lineTo(66,30);
+  ctx.moveTo(W-30,66); ctx.lineTo(W-30,30); ctx.lineTo(W-66,30);
+  ctx.stroke();
+  let y=88;
+  ctx.textAlign="center"; ctx.fillStyle=GOLD;
+  ctx.font="bold 62px Georgia"; ctx.fillText("TOMODACHI", W/2, y); y+=52;
+  ctx.font="bold 34px Georgia"; ctx.fillText("MONEY LEADERBOARD", W/2, y); y+=40;
+  ctx.fillStyle=CREAM; ctx.font="italic 24px Georgia";
+  ctx.fillText(statYear==="all"? "All Time" : "Season "+statYear, W/2, y); y+=34;
+  ctx.fillStyle=MUT; ctx.font="22px Arial";
+  ctx.fillText(`${nRounds} round${nRounds===1?"":"s"} · ${money(pot)} wagered`, W/2, y);
+  y=250;
+  const stats=[["ROUNDS", nRounds+"", "with payouts"],
+               ["TOTAL POT", money(pot), "wagered"],
+               ["TOP EARNER", big? signedMoney(big.net):"—", big? big.name:""],
+               ["BIGGEST DONOR", (worst&&worst!==big)? signedMoney(worst.net):"—", (worst&&worst!==big)? worst.name:""]];
+  const cw=(IW-30)/4;
+  stats.forEach((c,i)=>{
+    const x=P+i*(cw+10);
+    ctx.fillStyle="#F7F3E8"; ctx.fillRect(x,y,cw,84);
+    ctx.strokeStyle=GOLD; ctx.lineWidth=2; ctx.strokeRect(x,y,cw,84);
+    ctx.fillStyle="#5A6B5C"; ctx.font="bold 17px Arial"; ctx.fillText(c[0], x+cw/2, y+26);
+    ctx.fillStyle="#12271A"; ctx.font="bold 30px Georgia"; ctx.fillText(c[1], x+cw/2, y+58);
+    ctx.fillStyle="#5A6B5C"; ctx.font="18px Arial"; ctx.fillText(c[2], x+cw/2, y+78);
+  });
+  y+=110;
+  // main money table
+  const widths=[80,300,120,170,170,160];
+  const heads=["#","PLAYER","RNDS","WON","PAID IN","NET"];
+  ctx.fillStyle=THEAD; ctx.fillRect(P,y,IW,50);
+  ctx.fillStyle=GOLD; ctx.font="bold 21px Arial";
+  { let x=P; heads.forEach((hd,i)=>{ ctx.textAlign = i===1? "left":"center";
+      ctx.fillText(hd, i===1? x+16 : x+widths[i]/2, y+33); x+=widths[i]; }); }
+  y+=50;
+  rows.forEach((r,ri)=>{
+    ctx.fillStyle = ri%2? RB:RA; ctx.fillRect(P,y,IW,50);
+    let x=P;
+    ctx.fillStyle = ri===0? GOLD : ri===1? SILVER : ri===2? BRONZE : GRNB;
+    ctx.beginPath(); ctx.arc(x+widths[0]/2, y+25, 17, 0, 7); ctx.fill();
+    ctx.fillStyle = ri===0? "#1A1503" : "#fff";
+    ctx.font="bold 20px Arial"; ctx.textAlign="center"; ctx.fillText(ri+1+"", x+widths[0]/2, y+32);
+    x+=widths[0];
+    ctx.fillStyle=CREAM; ctx.font="bold 25px Georgia"; ctx.textAlign="left";
+    ctx.fillText(r.name, x+16, y+33); x+=widths[1];
+    ctx.textAlign="center"; ctx.font="22px Arial"; ctx.fillText(r.rounds+"", x+widths[2]/2, y+32); x+=widths[2];
+    ctx.fillStyle=r.won? GRN:MUT; ctx.font="bold 23px Arial"; ctx.fillText(money(r.won), x+widths[3]/2, y+32); x+=widths[3];
+    ctx.fillStyle=MUT; ctx.font="22px Arial"; ctx.fillText(money(r.paid), x+widths[4]/2, y+32); x+=widths[4];
+    ctx.fillStyle = r.net>0? GRN : r.net<0? RED : MUT; ctx.font="bold 25px Arial";
+    ctx.fillText(signedMoney(r.net), x+widths[5]/2, y+33);
+    y+=50;
+  });
+  y+=24;
+  const board=(title, lines)=>{
+    if(!lines.length) return;
+    ctx.fillStyle=GOLD; ctx.font="bold 27px Georgia"; ctx.textAlign="center";
+    ctx.fillText(title, W/2, y+30); y+=50;
+    ctx.fillStyle=CREAM; ctx.font="21px Arial";
+    lines.forEach(l=>{ ctx.fillText(l, W/2, y+22); y+=32; });
+    y+=16;
+  };
+  board("LOWEST ROUND EVER", best.slice(0,5).map((x,i)=>`${i+1}.  ${x.name} — ${x.low}`));
+  board("HOTTEST FORM", hot.slice(0,5).map((x,i)=>
+    `${i+1}.  ${x.s.name} — last 5 are ${Math.abs(x.t.d).toFixed(1)} ${x.t.d<0?"better":"worse"} than his ${fmt2(x.s.avg)}`));
+  ctx.fillStyle=MUT; ctx.font="20px Arial"; ctx.textAlign="center";
+  ctx.fillText("Tomodachi Golf Group · Only rounds finalized in the app carry payout data", W/2, H-38);
+  return cv;
+}
+
 /* ================= EXCEL EXPORT (R5-format .xlsx, live formulas) ================= */
 const CRC_T=(()=>{const t=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=(c&1)?0xEDB88320^(c>>>1):c>>>1;t[i]=c;}return t;})();
 function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_T[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
@@ -1402,6 +1494,19 @@ function payoutYears(){
   return [...ys].sort().reverse();
 }
 let statYear = "all";
+/* Lowest round ever + hottest current form — shared by the Money tab and its image. */
+function funBoards(){
+  const best = [];
+  state.players.forEach(p=>{
+    const sc = scoresFor(p, state.rounds);
+    if(sc.length) best.push({ name:p, low:Math.min(...sc), n:sc.length });
+  });
+  best.sort((a,b)=>a.low-b.low);
+  const hot = state.players.map(p=>playerStats(p, state.rounds)).filter(s=>s.n>=10)
+    .map(s=>({s, t:trendOf(s.name, state.rounds)})).filter(x=>x.t)
+    .sort((a,b)=>a.t.d-b.t.d);
+  return { best, hot };
+}
 function renderStats(){
   const years = payoutYears();
   document.getElementById("st-years").innerHTML =
@@ -1428,15 +1533,7 @@ function renderStats(){
   document.getElementById("st-note").textContent = rows.length
     ? "Only rounds finalized in the app carry payout data. The 230 rounds imported from the Excel workbook are scores only, so they aren't counted here."
     : "";
-  // fun leaderboards
-  const elig = state.players.map(p=>playerStats(p,state.rounds)).filter(s=>s.n>=10);
-  const best = [];
-  state.players.forEach(p=>{
-    const sc = scoresFor(p, state.rounds);
-    if(sc.length) best.push({name:p, low:Math.min(...sc), n:sc.length});
-  });
-  best.sort((a,b)=>a.low-b.low);
-  const hot = elig.map(s=>({s, t:trendOf(s.name,state.rounds)})).filter(x=>x.t).sort((a,b)=>a.t.d-b.t.d);
+  const { best, hot } = funBoards();
   document.getElementById("st-boards").innerHTML = `
     <div style="margin-bottom:10px"><b style="color:var(--gold)">🏌️ Lowest Round Ever</b>
       <div class="note">${best.slice(0,5).map((x,i)=>`${i+1}. ${x.name} — <b>${x.low}</b>`).join("<br>")||"—"}</div></div>
@@ -1676,6 +1773,15 @@ document.getElementById("res-img").onclick = ()=>{
 document.getElementById("gd-img").onclick = ()=>{
   const d = cardData().lastDate || new Date().toISOString().slice(0,10);
   sharePng(makeCardImage(), `Tomodachi_GDC_${d}.png`, "Tomodachi Game-Day Card");
+};
+document.getElementById("st-img").onclick = ()=>{
+  if(!moneyStats(statYear).length){
+    toast("No payout history yet — finalize a round in the app first");
+    return;
+  }
+  sharePng(makeMoneyImage(),
+    `Tomodachi_Money_${statYear==="all"?"AllTime":statYear}_${new Date().toISOString().slice(0,10)}.png`,
+    "Tomodachi Money Leaderboard");
 };
 document.getElementById("res-back").onclick = ()=>{
   const toCard = document.getElementById("res-back").textContent.includes("Card");
