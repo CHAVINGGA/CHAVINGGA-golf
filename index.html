@@ -50,6 +50,7 @@ td.pl{text-align:left;font-weight:700}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(180deg,#E0BE62,#B08F35);color:#161203;border:none;border-radius:10px;padding:12px 18px;font-size:.95rem;font-weight:700;font-family:Arial,sans-serif;cursor:pointer;width:100%;letter-spacing:.5px}
 .btn:active{transform:scale(.98)}
 .btn.ghost{background:transparent;border:2px solid var(--gold);color:var(--gold)}
+.btn.ghost.on{background:#12304A;border-color:#3C7FB5;color:#8FC7F0}
 .btn.danger{background:transparent;border:2px solid var(--red);color:var(--red)}
 .btn.sm{width:auto;padding:8px 14px;font-size:.8rem}
 .btnrow{display:flex;gap:8px;margin:10px 0}
@@ -199,6 +200,7 @@ canvas.spark{width:100%;height:130px;display:block;border-radius:8px;background:
     <div class="btnrow">
       <button class="btn ghost sm" id="r-samegroup">👥 Same as last round</button>
       <button class="btn ghost sm" id="r-clearsel">Clear</button>
+      <button class="btn ghost sm" id="r-nomoney">💵 Betting round</button>
     </div>
     <div class="chips" id="r-chips"></div>
     <div class="btnrow">
@@ -742,6 +744,10 @@ function renderRound(){
   const inGame = [...selected].filter(p=>!noBetSet.has(p)).length + guestList.length;
   const tot = selected.size + guestList.length;
   document.getElementById("r-count").textContent = tot? `(${tot} playing${noBetSet.size? ", "+inGame+" betting":""})` : "";
+  { const mem=[...selected], off=mem.length&&mem.every(p=>noBetSet.has(p));
+    const nb=document.getElementById("r-nomoney");
+    nb.textContent = off? "📊 No money today" : "💵 Betting round";
+    nb.classList.toggle("on", off); }
   document.querySelectorAll("#r-chips .chip").forEach(c=>c.onclick=()=>{
     const p = c.dataset.p;
     if(selected.has(p)){ selected.delete(p); noBetSet.delete(p); }
@@ -1400,9 +1406,10 @@ function renderHistory(){
     const nMembers = Object.keys(r.scores).length, nGuests = Object.keys(r.guests||{}).length;
     const nTrack = (r.noBet||[]).length;
     const hasFB = Object.values(r.scores).some(s=>typeof s==="object");
+    const hasPayouts = r.payouts && Object.keys(r.payouts).length>0;
     return `<div class="hist-item" data-i="${i}">
       <div><div class="d">${usDate(r.date)}${r.course? " · "+r.course:""}</div>
-      <div class="m">${nMembers} players${nGuests? " + "+nGuests+" guest":""}${nTrack? " · "+nTrack+" score-only":""}${hasFB? " · payouts available":" · totals only (Excel import)"}</div></div>
+      <div class="m">${nMembers} players${nGuests? " + "+nGuests+" guest":""}${nTrack? " · "+nTrack+" score-only":""}${hasFB? (hasPayouts? " · payouts available" : " · no betting") : " · totals only (Excel import)"}</div></div>
       <div style="display:flex;gap:6px">
         ${hasFB?`<button class="btn sm ghost" data-view="${i}">View</button>`:""}
         ${adm?`<button class="btn sm ghost" data-edit="${i}">✏️</button>`:""}
@@ -1861,6 +1868,21 @@ document.getElementById("r-course").addEventListener("input", ()=>{
   if(known) setHarder(known.harder);
   renderRound();
 });
+document.getElementById("r-nomoney").onclick = ()=>{
+  const members = [...selected];
+  if(!members.length){ toast("Pick the players first"); return; }
+  const allOff = members.every(p=>noBetSet.has(p));
+  if(allOff){
+    // back to a normal betting round — under-10 players stay score-only per the rule
+    const pre = preRoundsNow();
+    noBetSet = new Set(members.filter(p=>playerStats(p, pre).n < 10));
+    toast("Betting round — pot is back on");
+  } else {
+    members.forEach(p=>noBetSet.add(p));
+    toast("No money today — scores only, nobody pays in");
+  }
+  renderRound();
+};
 document.getElementById("r-samegroup").onclick = ()=>{
   const prev = [...state.rounds].reverse().find(r=>Object.keys(r.scores).length);
   if(!prev){ toast("No previous round to copy"); return; }
